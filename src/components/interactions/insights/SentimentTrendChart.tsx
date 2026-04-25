@@ -424,10 +424,18 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   }, [annotationsByWeekRaw]);
 
   const annotationsByWeek = useMemo(() => {
+    // Normaliza a chave do mapa para 'YYYY-MM-DD' para casar com o
+    // dataKey "week" do eixo X (que também é normalizado em sortedData).
+    // Sem isso, week_start vindo do banco como '2025-04-07T00:00:00' não
+    // bateria com '2025-04-07' usado no chart.
     const filtered = new Map<string, SentimentAnnotation[]>();
     for (const [week, list] of annotationsByWeekRaw.entries()) {
+      const key = normalizeWeek(week);
       const kept = list.filter((a) => annCategoryFilter.has(a.category));
-      if (kept.length > 0) filtered.set(week, kept);
+      if (kept.length === 0) continue;
+      const acc = filtered.get(key) ?? [];
+      acc.push(...kept);
+      filtered.set(key, acc);
     }
     return filtered;
   }, [annotationsByWeekRaw, annCategoryFilter]);
