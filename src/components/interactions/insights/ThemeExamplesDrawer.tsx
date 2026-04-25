@@ -444,28 +444,50 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
             {theme ? `${theme.mentions} menções em ${theme.count} conversas` : ""}
           </SheetDescription>
           <div
-            className="flex items-center gap-1.5 pt-1"
+            className="flex items-center flex-wrap gap-1.5 pt-1"
             role="group"
             aria-label="Tamanho do trecho exibido"
             title="Tamanho do trecho exibido"
           >
             <span className="text-[10px] text-muted-foreground mr-1">Trecho:</span>
-            {(["short", "medium", "long"] as const).map((p) => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setPreset(p)}
-                aria-pressed={preset === p}
-                className={cn(
-                  "h-6 px-2 rounded text-[11px] font-medium border transition-colors",
-                  preset === p
-                    ? "bg-primary/10 border-primary/40 text-foreground"
-                    : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/30",
-                )}
-              >
-                {p === "short" ? "Curto" : p === "medium" ? "Médio" : "Longo"}
-              </button>
-            ))}
+            {(["short", "medium", "long"] as const).map((p) => {
+              const chars = getExcerptWindow(p);
+              const label = p === "short" ? "Curto" : p === "medium" ? "Médio" : "Longo";
+              return (
+                <button
+                  key={p}
+                  type="button"
+                  onClick={() => setPreset(p)}
+                  aria-pressed={preset === p}
+                  title={`${label} · ~${chars} caracteres por excerto`}
+                  className={cn(
+                    "h-6 px-2 rounded text-[11px] font-medium border transition-colors inline-flex items-center gap-1",
+                    preset === p
+                      ? "bg-primary/10 border-primary/40 text-foreground"
+                      : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/30",
+                  )}
+                >
+                  <span>{label}</span>
+                  <span
+                    className={cn(
+                      "text-[9px] tabular-nums",
+                      preset === p ? "text-muted-foreground" : "text-muted-foreground/70",
+                    )}
+                    aria-hidden="true"
+                  >
+                    ~{chars}
+                  </span>
+                </button>
+              );
+            })}
+            <span
+              className="text-[10px] text-muted-foreground tabular-nums ml-1"
+              aria-live="polite"
+              title={`Janela atual: ~${getExcerptWindow(preset)} caracteres por excerto · ~${getFallbackWindow(preset)} no modo fallback`}
+            >
+              ≈ {getExcerptWindow(preset)} chars
+              <span className="text-muted-foreground/60"> · fallback ~{getFallbackWindow(preset)}</span>
+            </span>
             {preset !== DEFAULT_EXCERPT_PRESET && (
               <Button
                 type="button"
