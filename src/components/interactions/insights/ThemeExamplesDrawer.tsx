@@ -398,7 +398,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       return { totals, found: [] as Array<{ term: string; count: number }>, totalMatches: 0 };
     }
     for (const r of ranked) {
-      const counts = countTermMatches(r.ex.text, effectiveKeywords);
+      const counts = countTermMatches(r.ex.text, effectiveKeywords, matchMode);
       counts.forEach((n, term) => totals.set(term, (totals.get(term) ?? 0) + n));
     }
     const found = Array.from(totals.entries())
