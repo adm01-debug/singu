@@ -495,13 +495,54 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
                         </>
                       )}
                     </span>
-                    {ex.contact_id && (
-                      <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1">
-                        <Link to={`/contatos/${ex.contact_id}/ficha-360`} onClick={onClose}>
-                          Ficha 360 <ExternalLink className="h-3 w-3" />
-                        </Link>
-                      </Button>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {(() => {
+                        const isUseful = feedback.usefulByInteraction.get(ex.id) === true;
+                        const pending =
+                          feedback.toggle.isPending &&
+                          feedback.toggle.variables?.interactionId === ex.id;
+                        return (
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            disabled={pending}
+                            aria-pressed={isUseful}
+                            onClick={() =>
+                              feedback.toggle.mutate({
+                                interactionId: ex.id,
+                                isUseful: !isUseful,
+                              })
+                            }
+                            title={
+                              isUseful
+                                ? "Desmarcar como útil"
+                                : "Marcar como útil — vamos priorizar exemplos parecidos"
+                            }
+                            className={cn(
+                              "h-7 text-xs gap-1",
+                              isUseful && "text-success hover:text-success",
+                            )}
+                          >
+                            {pending ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : (
+                              <ThumbsUp
+                                className={cn("h-3 w-3", isUseful && "fill-current")}
+                              />
+                            )}
+                            {isUseful ? "Útil" : "Marcar útil"}
+                          </Button>
+                        );
+                      })()}
+                      {ex.contact_id && (
+                        <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1">
+                          <Link to={`/contatos/${ex.contact_id}/ficha-360`} onClick={onClose}>
+                            Ficha 360 <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        </Button>
+                      )}
+                    </div>
                   </footer>
                 </article>
               );
