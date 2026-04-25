@@ -478,12 +478,41 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
               size="xs"
               onClick={() => toggleSmooth(!smoothEnabled)}
               aria-pressed={smoothEnabled}
-              title={smoothEnabled ? "Desativar média móvel de 3 semanas" : "Ativar média móvel de 3 semanas"}
+              title={smoothEnabled ? `Desativar média móvel de ${smoothWindow} semanas` : `Ativar média móvel de ${smoothWindow} semanas`}
               className="gap-1"
             >
               <Activity className="h-3 w-3" />
-              Média móvel: {smoothEnabled ? "ON" : "OFF"}
+              Média móvel: {smoothEnabled ? `ON (MM${smoothWindow})` : "OFF"}
             </Button>
+            {smoothEnabled && (
+              <div
+                role="radiogroup"
+                aria-label="Janela da média móvel"
+                className="inline-flex items-center rounded-md border border-border bg-background overflow-hidden"
+              >
+                {([2, 3] as const).map((w) => {
+                  const active = smoothWindow === w;
+                  return (
+                    <button
+                      key={w}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      onClick={() => changeSmoothWindow(w)}
+                      title={`Janela de ${w} semanas`}
+                      className={cn(
+                        "px-2 py-0.5 text-[10px] font-medium tabular-nums transition-colors",
+                        active
+                          ? "bg-secondary text-secondary-foreground"
+                          : "text-muted-foreground hover:bg-muted"
+                      )}
+                    >
+                      MM{w}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {contactId && (
               <Button
                 type="button"
