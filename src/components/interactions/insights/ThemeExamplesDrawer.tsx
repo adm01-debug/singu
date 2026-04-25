@@ -51,10 +51,15 @@ function normalizeText(s: string): string {
 }
 
 /**
- * Conta ocorrências whole-word de cada termo dentro de `text` (acento-insensível).
- * Retorna um Map<keywordOriginal, count> preservando o termo informado pelo chamador.
+ * Conta ocorrências de cada termo dentro de `text` (sempre case/acento-insensível).
+ * - matchMode "exact": whole-word (delimitado por não-letra/não-dígito).
+ * - matchMode "partial": substring livre.
  */
-function countTermMatches(text: string, terms: string[]): Map<string, number> {
+function countTermMatches(
+  text: string,
+  terms: string[],
+  matchMode: MatchMode = "exact",
+): Map<string, number> {
   const result = new Map<string, number>();
   if (!text) return result;
   const norm = normalizeText(text);
@@ -64,10 +69,12 @@ function countTermMatches(text: string, terms: string[]): Map<string, number> {
       result.set(t, 0);
       continue;
     }
-    const re = new RegExp(
-      `(?:^|[^\\p{L}\\p{N}])(${escapeRegex(normalizeText(trimmed))})(?=$|[^\\p{L}\\p{N}])`,
-      "giu",
-    );
+    const escaped = escapeRegex(normalizeText(trimmed));
+    const pattern =
+      matchMode === "exact"
+        ? `(?:^|[^\\p{L}\\p{N}])(${escaped})(?=$|[^\\p{L}\\p{N}])`
+        : `(${escaped})`;
+    const re = new RegExp(pattern, "giu");
     let count = 0;
     let m: RegExpExecArray | null;
     re.lastIndex = 0;
