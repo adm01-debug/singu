@@ -288,76 +288,159 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
         <div className="flex items-start gap-1.5 text-[11px] bg-warning/8 border border-warning/20 rounded px-2 py-1.5">
           <Lightbulb className="h-3.5 w-3.5 shrink-0 text-warning mt-0.5" />
           <div className="flex-1 min-w-0">
-            <p className="font-medium text-foreground mb-0.5">Resposta sugerida</p>
-            <p
-              id={panelId}
-              className={cn(
-                "text-muted-foreground whitespace-pre-wrap transition-all",
-                !expanded && showToggle && "line-clamp-3",
-              )}
+            <Tabs
+              value={summaryActive ? "summary" : "response"}
+              onValueChange={(v) => setSummaryActive(v === "summary")}
+              className="w-full"
             >
-              {suggested}
-            </p>
-            <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-              {showToggle && (
-                <button
-                  type="button"
-                  onClick={() => setExpanded((v) => !v)}
-                  aria-expanded={expanded}
-                  aria-controls={panelId}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium text-warning hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+              <TabsList className="h-7 p-0.5 bg-warning/10 border border-warning/20">
+                <TabsTrigger
+                  value="summary"
+                  className="h-6 text-[11px] px-2 gap-1 data-[state=active]:bg-background data-[state=active]:text-foreground"
+                  disabled={!hasExamples}
+                  title={hasExamples ? "Resumo gerado por IA" : "Resumo indisponível: sem conversas relacionadas"}
                 >
-                  {expanded ? (
-                    <>
-                      <ChevronUp className="h-3 w-3" />
-                      Recolher
-                    </>
-                  ) : (
-                    <>
-                      <ChevronDown className="h-3 w-3" />
-                      Ver resposta completa
-                    </>
-                  )}
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={handleCopy}
-                aria-label="Copiar resposta sugerida"
-                className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground/80 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                  <Sparkles className="h-3 w-3" />
+                  Resumo
+                </TabsTrigger>
+                <TabsTrigger
+                  value="response"
+                  className="h-6 text-[11px] px-2 gap-1 data-[state=active]:bg-background data-[state=active]:text-foreground"
+                >
+                  <Lightbulb className="h-3 w-3" />
+                  Resposta
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent
+                value="summary"
+                id={summaryPanelId}
+                className="mt-1.5 focus-visible:outline-none"
               >
-                {copied ? (
-                  <>
-                    <Check className="h-3 w-3 text-success" />
-                    Copiado
-                  </>
+                {!hasExamples ? (
+                  <p className="text-muted-foreground italic">
+                    Sem conversas relacionadas para gerar um resumo.
+                  </p>
+                ) : summaryQuery.isLoading ? (
+                  <div className="space-y-1.5" aria-live="polite" aria-busy="true">
+                    <Skeleton className="h-3 w-full" />
+                    <Skeleton className="h-3 w-4/5" />
+                    <p className="text-[10px] text-muted-foreground italic mt-1">
+                      Resumindo o contexto…
+                    </p>
+                  </div>
+                ) : summaryQuery.isError ? (
+                  <div className="flex items-start gap-1.5 text-destructive">
+                    <AlertCircle className="h-3 w-3 mt-0.5 shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p>
+                        {summaryQuery.error instanceof Error
+                          ? summaryQuery.error.message
+                          : "Não foi possível gerar o resumo."}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => summaryQuery.refetch()}
+                        className="mt-1 inline-flex items-center gap-1 font-medium text-foreground/80 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                      >
+                        <RotateCcw className="h-3 w-3" />
+                        Tentar novamente
+                      </button>
+                    </div>
+                  </div>
+                ) : summaryQuery.data?.empty ? (
+                  <p className="text-muted-foreground italic">
+                    {summaryQuery.data.summary}
+                  </p>
+                ) : summaryQuery.data?.summary ? (
+                  <p className="text-foreground/90 whitespace-pre-wrap">
+                    {summaryQuery.data.summary}
+                  </p>
                 ) : (
-                  <>
-                    <Copy className="h-3 w-3" />
-                    Copiar resposta
-                  </>
+                  <p className="text-muted-foreground italic">
+                    Toque para gerar o resumo.
+                  </p>
                 )}
-              </button>
-              <button
-                type="button"
-                onClick={() => setComposerOpen(true)}
-                aria-label="Abrir modal para editar e enviar a resposta sugerida"
-                className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+              </TabsContent>
+
+              <TabsContent
+                value="response"
+                className="mt-1.5 focus-visible:outline-none"
               >
-                <Wand2 className="h-3 w-3" />
-                Criar resposta sugerida
-              </button>
-              {hasExamples && (
-                <button
-                  type="button"
-                  onClick={() => setDrawerOpen(true)}
-                  className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground/80 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                <p className="font-medium text-foreground mb-0.5 sr-only">
+                  Resposta sugerida
+                </p>
+                <p
+                  id={panelId}
+                  className={cn(
+                    "text-muted-foreground whitespace-pre-wrap transition-all",
+                    !expanded && showToggle && "line-clamp-3",
+                  )}
                 >
-                  <ExternalLink className="h-3 w-3" />
-                  Ver conversas ({examplesCount})
-                </button>
-              )}
-            </div>
+                  {suggested}
+                </p>
+                <div className="flex items-center gap-3 mt-1.5 flex-wrap">
+                  {showToggle && (
+                    <button
+                      type="button"
+                      onClick={() => setExpanded((v) => !v)}
+                      aria-expanded={expanded}
+                      aria-controls={panelId}
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-warning hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                    >
+                      {expanded ? (
+                        <>
+                          <ChevronUp className="h-3 w-3" />
+                          Recolher
+                        </>
+                      ) : (
+                        <>
+                          <ChevronDown className="h-3 w-3" />
+                          Ver resposta completa
+                        </>
+                      )}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleCopy}
+                    aria-label="Copiar resposta sugerida"
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground/80 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                  >
+                    {copied ? (
+                      <>
+                        <Check className="h-3 w-3 text-success" />
+                        Copiado
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="h-3 w-3" />
+                        Copiar resposta
+                      </>
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setComposerOpen(true)}
+                    aria-label="Abrir modal para editar e enviar a resposta sugerida"
+                    className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                  >
+                    <Wand2 className="h-3 w-3" />
+                    Criar resposta sugerida
+                  </button>
+                  {hasExamples && (
+                    <button
+                      type="button"
+                      onClick={() => setDrawerOpen(true)}
+                      className="inline-flex items-center gap-1 text-[11px] font-medium text-foreground/80 hover:text-foreground hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                    >
+                      <ExternalLink className="h-3 w-3" />
+                      Ver conversas ({examplesCount})
+                    </button>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       ) : (
