@@ -368,7 +368,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       if (b.total !== a.total) return b.total - a.total;
       return a.originalIndex - b.originalIndex;
     });
-  }, [rawDisplayItems, effectiveKeywords, isFallback]);
+  }, [rawDisplayItems, effectiveKeywords, isFallback, matchMode]);
 
   const displayItems = useMemo(() => ranked.map((r) => r.ex), [ranked]);
 
