@@ -195,24 +195,100 @@ export function InsightsPanel() {
             </Card>
             <div className="space-y-3">
               {topObjections.length > 0 && (
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                    <ListFilter className="h-3.5 w-3.5" />
+                    <span>Filtrar objeções</span>
+                  </div>
+                  <Tabs
+                    value={objectionFilter}
+                    onValueChange={(v) => handleObjectionFilter(v as ObjectionFilter)}
+                  >
+                    <TabsList className="h-7 p-0.5">
+                      <TabsTrigger
+                        value="all"
+                        className="text-[11px] h-6 px-2 gap-1"
+                        title="Todas as objeções do período"
+                      >
+                        Todas
+                        <Badge variant="outline" className="h-4 text-[10px] px-1 ml-0.5">
+                          {objectionCounts.all}
+                        </Badge>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="unhandled"
+                        className="text-[11px] h-6 px-2 gap-1"
+                        title="Objeções com pelo menos uma menção sem tratamento"
+                      >
+                        <AlertTriangle className="h-3 w-3" />
+                        Não tratadas
+                        <Badge variant="outline" className="h-4 text-[10px] px-1 ml-0.5">
+                          {objectionCounts.unhandled}
+                        </Badge>
+                      </TabsTrigger>
+                      <TabsTrigger
+                        value="critical"
+                        className="text-[11px] h-6 px-2 gap-1"
+                        title="Severidade alta: 3+ não tratadas ou taxa de tratamento ≤ 30%"
+                      >
+                        <Flame className="h-3 w-3" />
+                        Críticas
+                        <Badge variant="outline" className="h-4 text-[10px] px-1 ml-0.5">
+                          {objectionCounts.critical}
+                        </Badge>
+                      </TabsTrigger>
+                    </TabsList>
+                  </Tabs>
+                </div>
+              )}
+
+              {topObjections.length > 0 && filteredObjections.length === 0 && (
                 <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">Objeções em destaque</CardTitle>
-                    <CardDescription className="text-xs">Top 3 com maior risco de bloqueio</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <ObjectionsSpotlight objections={topObjections} />
+                  <CardContent className="py-6 text-center space-y-2">
+                    <p className="text-sm text-foreground">
+                      {objectionFilter === "unhandled"
+                        ? "Nenhuma objeção sem tratamento neste período. 🎉"
+                        : "Nenhuma objeção crítica neste período. 🎉"}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => handleObjectionFilter("all")}
+                      className="text-xs font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+                    >
+                      Ver todas as objeções
+                    </button>
                   </CardContent>
                 </Card>
               )}
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm">Objeções recorrentes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ObjectionsRanking objections={topObjections} />
-                </CardContent>
-              </Card>
+
+              {filteredObjections.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">Objeções em destaque</CardTitle>
+                    <CardDescription className="text-xs">
+                      {objectionFilter === "all"
+                        ? "Top 3 com maior risco de bloqueio"
+                        : objectionFilter === "unhandled"
+                          ? `Top com menções sem tratamento (${filteredObjections.length})`
+                          : `Top com severidade crítica (${filteredObjections.length})`}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <ObjectionsSpotlight objections={filteredObjections} />
+                  </CardContent>
+                </Card>
+              )}
+
+              {filteredObjections.length > 0 && (
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm">Objeções recorrentes</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ObjectionsRanking objections={filteredObjections} />
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
         </>
