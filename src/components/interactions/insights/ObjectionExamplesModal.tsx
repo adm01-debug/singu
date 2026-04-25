@@ -293,6 +293,16 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
 
   const totalIds = ids.length;
 
+  // Termos da objeção (para snippet) + termo da busca (≥2 chars) → regex usada para destacar.
+  const objectionTermsForSnippet = useMemo(
+    () => extractObjectionTerms(objection?.objection),
+    [objection?.objection],
+  );
+  const highlightRegex = useMemo(() => {
+    const searchTerm = normalizedSearch && normalizedSearch.length >= 2 ? [normalizedSearch] : [];
+    return buildHighlightRegex([...objectionTermsForSnippet, ...searchTerm]);
+  }, [objectionTermsForSnippet, normalizedSearch]);
+
   const {
     data,
     isLoading,
