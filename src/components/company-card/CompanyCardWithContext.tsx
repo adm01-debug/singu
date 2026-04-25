@@ -1,7 +1,8 @@
-import { memo, useState, useCallback } from 'react';
+import { memo, useState, useCallback, type MouseEvent as ReactMouseEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Building2, Users, MoreVertical } from 'lucide-react';
+import { Building2, Users, MoreVertical, MessageSquare } from 'lucide-react';
+import { CompanyInteractionsModal } from './CompanyInteractionsModal';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
