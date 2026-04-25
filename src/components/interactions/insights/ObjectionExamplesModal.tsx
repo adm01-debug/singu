@@ -447,6 +447,7 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
                 </button>
               )}
             </div>
+          </div>
           {hasFilters && (
             <Button
               type="button"
