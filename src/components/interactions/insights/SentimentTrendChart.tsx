@@ -89,7 +89,7 @@ function pctClass(pct: number): string {
   return "text-muted-foreground";
 }
 
-interface TooltipExtra { positivePctMA?: number | null; annotations?: SentimentAnnotation[] }
+interface TooltipExtra { positivePctMA?: number | null; maWindow?: number; annotations?: SentimentAnnotation[] }
 
 const SHOW_ALL_ROWS_KEY = "singu:sentiment-trend:tooltip-show-all-rows";
 
@@ -148,7 +148,7 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
             <span className="ml-1 text-muted-foreground">positivo</span>
             {typeof point.positivePctMA === "number" && (
               <span className="ml-2 text-muted-foreground">
-                · MM3: <span className="font-medium tabular-nums">{point.positivePctMA}%</span>
+                · MM{point.maWindow ?? 3}: <span className="font-medium tabular-nums">{point.positivePctMA}%</span>
               </span>
             )}
           </div>
@@ -254,6 +254,13 @@ interface EvolutionStats {
 
 const SHOW_PCT_LINE_KEY = "singu:sentiment-trend:show-pct-line";
 const SMOOTH_ENABLED_KEY = "singu:sentiment-trend:smooth-enabled";
+const SMOOTH_WINDOW_KEY = "singu:sentiment-trend:smooth-window";
+type SmoothWindow = 2 | 3;
+function readSmoothWindow(): SmoothWindow {
+  if (typeof window === "undefined") return 3;
+  const v = window.localStorage.getItem(SMOOTH_WINDOW_KEY);
+  return v === "2" ? 2 : 3;
+}
 
 function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   const [smoothEnabled, setSmoothEnabled] = useState<boolean>(() => {
@@ -265,6 +272,13 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
     setSmoothEnabled(next);
     if (typeof window !== "undefined") {
       window.localStorage.setItem(SMOOTH_ENABLED_KEY, next ? "1" : "0");
+    }
+  };
+  const [smoothWindow, setSmoothWindow] = useState<SmoothWindow>(() => readSmoothWindow());
+  const changeSmoothWindow = (next: SmoothWindow) => {
+    setSmoothWindow(next);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(SMOOTH_WINDOW_KEY, String(next));
     }
   };
   const [annDialogOpen, setAnnDialogOpen] = useState(false);
@@ -302,15 +316,15 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
 
   const dataWithMA = useMemo(() => {
     return sortedData.map((p, i) => {
-      const start = Math.max(0, i - 2);
+      const start = Math.max(0, i - (smoothWindow - 1));
       const window = sortedData.slice(start, i + 1);
       const sumPos = window.reduce((a, w) => a + (w.positive ?? 0), 0);
       const sumTot = window.reduce((a, w) => a + (w.total ?? 0), 0);
       const positivePctMA = sumTot > 0 ? Math.round((sumPos / sumTot) * 100) : null;
       const annotations = annotationsByWeek.get(p.week) ?? [];
-      return { ...p, positivePctMA, annotations };
+      return { ...p, positivePctMA, maWindow: smoothWindow, annotations };
     });
-  }, [sortedData, annotationsByWeek]);
+  }, [sortedData, annotationsByWeek, smoothWindow]);
 
   const weekOptions = useMemo(() => sortedData.map((p) => p.week), [sortedData]);
 
@@ -464,12 +478,41 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
               size="xs"
               onClick={() => toggleSmooth(!smoothEnabled)}
               aria-pressed={smoothEnabled}
-              title={smoothEnabled ? "Desativar média móvel de 3 semanas" : "Ativar média móvel de 3 semanas"}
+              title={smoothEnabled ? `Desativar média móvel de ${smoothWindow} semanas` : `Ativar média móvel de ${smoothWindow} semanas`}
               className="gap-1"
             >
               <Activity className="h-3 w-3" />
-              Média móvel: {smoothEnabled ? "ON" : "OFF"}
+              Média móvel: {smoothEnabled ? `ON (MM${smoothWindow})` : "OFF"}
             </Button>
+            {smoothEnabled && (
+              <div
+                role="radiogroup"
+                aria-label="Janela da média móvel"
+                className="inline-flex items-center rounded-md border border-border bg-background overflow-hidden"
+              >
+                {([2, 3] as const).map((w) => {
+                  const active = smoothWindow === w;
+                  return (
+                    <button
+                      key={w}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      onClick={() => changeSmoothWindow(w)}
+                      title={`Janela de ${w} semanas`}
+                      className={cn(
+                        "px-2 py-0.5 text-[10px] font-medium tabular-nums transition-colors",
+                        active
+                          ? "bg-secondary text-secondary-foreground"
+                          : "text-muted-foreground hover:bg-muted"
+                      )}
+                    >
+                      MM{w}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
             {contactId && (
               <Button
                 type="button"
@@ -578,7 +621,7 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
                 yAxisId="pct"
                 type="monotone"
                 dataKey="positivePctMA"
-                name="Tendência (MM3)"
+                name={`Tendência (MM${smoothWindow})`}
                 stroke="hsl(var(--success))"
                 strokeWidth={3}
                 strokeOpacity={0.45}
