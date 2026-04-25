@@ -545,9 +545,18 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
                         );
                       })()}
                       {ex.contact_id && (
-                        <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1">
-                          <Link to={`/contatos/${ex.contact_id}/ficha-360`} onClick={onClose}>
-                            Ficha 360 <ExternalLink className="h-3 w-3" />
+                        <Button
+                          asChild
+                          size="sm"
+                          variant="ghost"
+                          className="h-7 text-xs gap-1"
+                          title="Abrir esta conversa na Ficha 360 (rola até o trecho)"
+                        >
+                          <Link
+                            to={`/contatos/${ex.contact_id}/ficha-360?focus=${ex.id}`}
+                            onClick={onClose}
+                          >
+                            Abrir na Ficha 360 <ExternalLink className="h-3 w-3" />
                           </Link>
                         </Button>
                       )}

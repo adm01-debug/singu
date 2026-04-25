@@ -1,5 +1,5 @@
-import { memo } from 'react';
-import { Link } from 'react-router-dom';
+import { memo, useEffect, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { MessageSquare, Phone, Mail, Calendar, FileText, ArrowRight } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -67,12 +67,42 @@ export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtr
   const channelsKey = Array.isArray(channels) ? [...channels].map((c) => c.toLowerCase()).sort().join(',') : '';
   const qKey = q ? hashString(q.trim().toLowerCase()) : 'noq';
   const filterKey = `${days ?? 'all'}-${channelsKey || 'all'}-${qKey}`;
+
+  // Deep-link: ?focus=<interactionId> rola até o item e aplica destaque temporário.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const focusId = searchParams.get('focus');
+  const focusIndex = focusId ? items.findIndex((it) => it.id === focusId) : -1;
+  const initialBatch = focusIndex >= 0 ? Math.max(15, focusIndex + 5) : 15;
+
   const { visible, hasMore, sentinelRef, loadMore } = useInfiniteList(
     items,
-    15,
+    initialBatch,
     [items, contactId, filterKey],
     { persistKey: contactId ? `ficha-ultimas-${contactId}-${filterKey}` : undefined }
   );
+
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const focusedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!focusId || focusedRef.current === focusId) return;
+    if (!items.some((it) => it.id === focusId)) return;
+    focusedRef.current = focusId;
+    // Aguarda render do item visível antes de rolar.
+    const timer = window.setTimeout(() => {
+      const el = document.querySelector<HTMLElement>(`[data-interaction-id="${focusId}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlightId(focusId);
+        window.setTimeout(() => setHighlightId(null), 2400);
+      }
+      // Limpa o param da URL para não re-disparar em remounts/voltar.
+      const next = new URLSearchParams(searchParams);
+      next.delete('focus');
+      setSearchParams(next, { replace: true });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [focusId, items, searchParams, setSearchParams]);
 
   // Publica progresso para overlays globais (ex.: tooltip do botão "Voltar ao topo").
   useReportInfiniteScrollProgress(
@@ -136,11 +166,23 @@ export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtr
 
               {visible.map((it) => {
                 const Icon = channelIcon(it.channel);
+                const isHighlighted = highlightId === it.id;
                 return (
-                  <li key={it.id}>
+                  <li
+                    key={it.id}
+                    data-interaction-id={it.id}
+                    className={cn(
+                      'rounded-md transition-shadow',
+                      isHighlighted &&
+                        'ring-2 ring-primary ring-offset-2 ring-offset-background shadow-md',
+                    )}
+                  >
                     <Link
                       to={`/interacoes?contact=${contactId}&open=${it.id}`}
-                      className="flex items-start gap-3 px-2 py-2 rounded-md hover:bg-muted/40 transition-colors"
+                      className={cn(
+                        'flex items-start gap-3 px-2 py-2 rounded-md transition-colors',
+                        isHighlighted ? 'bg-primary/10' : 'hover:bg-muted/40',
+                      )}
                     >
                       <div className="mt-0.5 h-7 w-7 rounded-md bg-primary/10 flex items-center justify-center shrink-0">
                         <Icon className="h-3.5 w-3.5 text-primary" />
