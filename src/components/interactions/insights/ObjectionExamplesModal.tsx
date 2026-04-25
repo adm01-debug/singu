@@ -283,10 +283,19 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   }, [typeFiltered]);
 
   // Aplica filtro de sentimento (multi-seleção) sobre o conjunto já filtrado por data + tipo.
-  const filtered = useMemo(() => {
+  const sentimentFiltered = useMemo(() => {
     if (selectedSentiments.size === 0) return typeFiltered;
     return typeFiltered.filter((ex) => selectedSentiments.has(sentimentBucketOf(ex.sentiment)));
   }, [typeFiltered, selectedSentiments]);
+
+  // Aplica busca textual (título + conteúdo) como último estágio do funil.
+  const filtered = useMemo(() => {
+    if (!normalizedSearch) return sentimentFiltered;
+    return sentimentFiltered.filter((ex) => {
+      const hay = `${normalizeText(ex.title)} ${normalizeText(ex.content)}`;
+      return hay.includes(normalizedSearch);
+    });
+  }, [sentimentFiltered, normalizedSearch]);
 
   // Itens renderizados = todos os carregados que passaram nos filtros.
   const pageItems = filtered;
