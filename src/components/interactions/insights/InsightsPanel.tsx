@@ -48,7 +48,7 @@ export function InsightsPanel() {
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
-  const { kpis, sentimentDistribution, sentimentTrend, sentimentTrendSummary, topThemes, topObjections, sentimentBuckets, isLoading } = useInteractionsInsights(period);
+  const { kpis, sentimentDistribution, sentimentTrend, sentimentTrendSummary, topThemes, topObjections, objectionsTrend, objectionsTrendSummary, sentimentBuckets, isLoading } = useInteractionsInsights(period);
   const [selectedTheme, setSelectedTheme] = useState<ThemeAggregate | null>(null);
 
   // Fechar drawer de temas ao trocar período (bucket é tratado via URL em handlePeriod).
