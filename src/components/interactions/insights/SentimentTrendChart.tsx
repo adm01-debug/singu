@@ -693,6 +693,96 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
                 <Pin className="h-3 w-3" /> Anotar
               </Button>
             )}
+            {contactId && totalAnnotations > 0 && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="xs"
+                    title="Filtrar anotações por categoria"
+                    className={cn(!allCategoriesActive && "text-primary")}
+                  >
+                    <Filter className="h-3 w-3" />
+                    Filtrar
+                    {!allCategoriesActive && (
+                      <span className="ml-1 inline-flex items-center justify-center rounded-sm bg-primary/15 px-1 text-[9px] font-semibold tabular-nums text-primary">
+                        {annCategoryFilter.size}/{CATEGORY_KEYS.length}
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent align="end" className="w-64 p-2">
+                  <div className="flex items-center justify-between px-1 pb-1.5 border-b border-border">
+                    <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      Categorias visíveis
+                    </p>
+                    <div className="flex items-center gap-1">
+                      <button
+                        type="button"
+                        onClick={() => setAllAnnCategories(true)}
+                        disabled={allCategoriesActive}
+                        className="text-[10px] text-primary hover:underline disabled:text-muted-foreground disabled:no-underline"
+                      >
+                        Todas
+                      </button>
+                      <span className="text-[10px] text-muted-foreground">·</span>
+                      <button
+                        type="button"
+                        onClick={() => setAllAnnCategories(false)}
+                        disabled={annCategoryFilter.size === 0}
+                        className="text-[10px] text-muted-foreground hover:underline disabled:opacity-50"
+                      >
+                        Nenhuma
+                      </button>
+                    </div>
+                  </div>
+                  <ul className="py-1 space-y-0.5">
+                    {CATEGORY_KEYS.map((k) => {
+                      const meta = ANNOTATION_CATEGORIES[k];
+                      const Icon = meta.icon;
+                      const checked = annCategoryFilter.has(k);
+                      const count = annotationCategoryCounts[k] ?? 0;
+                      return (
+                        <li key={k}>
+                          <label
+                            className={cn(
+                              "flex items-center gap-2 rounded-sm px-1.5 py-1 text-xs cursor-pointer hover:bg-muted/60",
+                              count === 0 && "opacity-60"
+                            )}
+                          >
+                            <Checkbox
+                              checked={checked}
+                              onCheckedChange={() => toggleAnnCategory(k)}
+                              aria-label={`Mostrar anotações de ${meta.label}`}
+                            />
+                            <span
+                              className="inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-sm"
+                              style={{ backgroundColor: meta.color }}
+                              aria-hidden
+                            >
+                              <Icon
+                                className="h-2.5 w-2.5"
+                                style={{ color: "hsl(var(--background))" }}
+                                strokeWidth={2.5}
+                              />
+                            </span>
+                            <span className="flex-1 text-foreground">{meta.label}</span>
+                            <span className="tabular-nums text-[10px] text-muted-foreground">
+                              {count}
+                            </span>
+                          </label>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  <p className="border-t border-border pt-1.5 px-1 text-[10px] text-muted-foreground">
+                    Exibindo <span className="font-medium tabular-nums text-foreground">{visibleAnnotations}</span> de{" "}
+                    <span className="tabular-nums">{totalAnnotations}</span> anotação(ões).
+                  </p>
+                </PopoverContent>
+              </Popover>
+            )}
             <div className="flex items-center gap-2 pl-1">
               <Switch
                 id="toggle-pct-line"
