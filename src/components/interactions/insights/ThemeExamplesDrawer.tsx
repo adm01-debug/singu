@@ -550,12 +550,31 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
           {!loading && displayItems.length > 0 && (
             <>
               {isFallback && (
-                <div className="flex gap-2 items-start rounded-md bg-muted/40 border border-border/60 p-2">
-                  <Info className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-0.5" />
-                  <p className="text-xs text-muted-foreground leading-relaxed">
-                    Sem menções diretas das keywords deste tema. Mostrando as {displayItems.length} passagens
-                    mais relevantes das conversas.
-                  </p>
+                <div
+                  role="status"
+                  aria-live="polite"
+                  className="rounded-md border border-warning/40 bg-warning/10 p-3"
+                >
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-warning shrink-0 mt-0.5" aria-hidden="true" />
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+                        <Sparkles className="h-3 w-3 text-warning" aria-hidden="true" />
+                        Sugestões aproximadas — sem menções diretas
+                      </p>
+                      <p className="text-xs text-muted-foreground leading-relaxed">
+                        Não encontramos menções literais das keywords deste tema nas transcrições.
+                        Estamos exibindo as <strong className="font-medium text-foreground">{displayItems.length} passagem
+                        {displayItems.length === 1 ? "" : "ns"}</strong> mais relevantes como{" "}
+                        <strong className="font-medium text-foreground">sugestão de leitura</strong>{" "}
+                        — interprete-as como contexto provável, e não como evidência direta do tema.
+                      </p>
+                      <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
+                        Dica: tente o modo de match <strong className="font-medium">“Parcial”</strong> ou
+                        revise as keywords selecionadas acima para encontrar menções literais.
+                      </p>
+                    </div>
+                  </div>
                 </div>
               )}
               {!isFallback && (
