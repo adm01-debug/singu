@@ -240,7 +240,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
 
   const [selectedKeywords, setSelectedKeywords] = useState<Set<string>>(new Set());
 
-  // Reset seleção sempre que o conjunto de keywords mudar (novo tema/cat\u00e1logo).
+  // Reset seleção sempre que o conjunto de keywords mudar (novo tema/catálogo).
   useEffect(() => {
     setSelectedKeywords(new Set(keywords.map((k) => normalizeKey(k))));
   }, [keywords]);
