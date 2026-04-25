@@ -466,15 +466,55 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
                   {sourcesCount === 1 ? "" : "s"}
                 </p>
               )}
-              {displayItems.map((ex, i) => (
-                <ExcerptItem
-                  key={`${ex.interactionId}-${ex.position}-${i}`}
-                  excerpt={ex}
-                  interaction={interactionMap.get(ex.interactionId)}
-                  terms={isFallback ? [] : effectiveKeywords}
-                  onClose={onClose}
-                />
-              ))}
+
+              {!isFallback && effectiveKeywords.length > 0 && (
+                <div className="rounded-md border border-border/60 bg-muted/30 p-3 space-y-2">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-medium text-foreground">
+                      Resumo de keywords encontradas
+                    </span>
+                    <span className="text-[10px] text-muted-foreground">
+                      {keywordSummary.totalMatches} ocorrência
+                      {keywordSummary.totalMatches === 1 ? "" : "s"} ·{" "}
+                      {keywordSummary.found.length}/{effectiveKeywords.length} keyword
+                      {effectiveKeywords.length === 1 ? "" : "s"}
+                    </span>
+                  </div>
+                  {keywordSummary.found.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {keywordSummary.found.map(({ term, count }) => (
+                        <Badge
+                          key={term}
+                          variant="outline"
+                          className="text-[10px] gap-1 bg-warning/10 border-warning/40 text-foreground"
+                        >
+                          <span className="truncate max-w-[140px]">{term}</span>
+                          <span className="text-muted-foreground">·</span>
+                          <span className="tabular-nums">{count}</span>
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground italic">
+                      Nenhuma ocorrência literal das keywords selecionadas nos excertos exibidos.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {displayItems.map((ex, i) => {
+                const key = `${ex.interactionId}-${ex.position}-${i}`;
+                return (
+                  <ExcerptItem
+                    key={key}
+                    excerpt={ex}
+                    interaction={interactionMap.get(ex.interactionId)}
+                    terms={isFallback ? [] : effectiveKeywords}
+                    matchCount={perExcerptCounts.get(key)}
+                    onClose={onClose}
+                  />
+                );
+              })}
             </>
           )}
 
