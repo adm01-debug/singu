@@ -116,6 +116,16 @@ function SuggestedResponseModalImpl({
               <Badge variant="outline" className="text-[10px] h-4 px-1.5">
                 {category}
               </Badge>
+              {alreadyAppliedCount > 0 && (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] h-4 px-1.5 gap-1 border-success/40 text-success"
+                  title={`Você já marcou esta resposta como aplicada ${alreadyAppliedCount}× anteriormente`}
+                >
+                  <CheckCircle2 className="h-2.5 w-2.5" />
+                  Aplicada {alreadyAppliedCount}×
+                </Badge>
+              )}
               <span className="text-xs text-foreground line-clamp-2" title={objection}>
                 {objection}
               </span>
