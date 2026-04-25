@@ -93,6 +93,11 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
     objectionStorageKey("objection-suggested-expanded", o.objection),
     false,
   );
+  // Aba ativa do bloco "Resposta sugerida": true = "Resumo", false = "Resposta".
+  const [summaryActive, setSummaryActive] = usePersistentBoolean(
+    objectionStorageKey("objection-summary-active", o.objection),
+    false,
+  );
   const [copied, setCopied] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
