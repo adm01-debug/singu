@@ -41,10 +41,8 @@ describe("normalizeWeek", () => {
   });
 
   it("é defensivo contra tipos não-string", () => {
-    // @ts-expect-error testando entrada inválida em runtime
-    expect(normalizeWeek(null)).toBe(null);
-    // @ts-expect-error testando entrada inválida em runtime
-    expect(normalizeWeek(123)).toBe(123);
+    expect(normalizeWeek(null as unknown as string)).toBe(null);
+    expect(normalizeWeek(123 as unknown as string)).toBe(123);
   });
 });
 
