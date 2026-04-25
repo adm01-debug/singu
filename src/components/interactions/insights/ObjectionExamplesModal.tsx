@@ -788,9 +788,20 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
                     </div>
                   )}
 
-                  {ex.content && (
-                    <p className="text-xs text-muted-foreground line-clamp-3">{ex.content}</p>
-                  )}
+                  {ex.content && (() => {
+                    const snip = pickSnippet(ex.content, objectionTermsForSnippet);
+                    return (
+                      <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                        {snip.prefix && <span aria-hidden="true">… </span>}
+                        {renderHighlighted(
+                          snip.snippet,
+                          highlightRegex,
+                          "bg-warning/30 text-foreground rounded px-0.5 py-px",
+                        )}
+                        {snip.suffix && <span aria-hidden="true"> …</span>}
+                      </p>
+                    );
+                  })()}
                   <footer className="flex items-center justify-between pt-1">
                     <span className="text-[10px] text-muted-foreground">
                       {ex.type}
