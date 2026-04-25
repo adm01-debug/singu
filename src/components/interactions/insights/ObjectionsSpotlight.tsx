@@ -8,6 +8,23 @@ import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
 import { ObjectionExamplesDrawer } from "./ObjectionExamplesDrawer";
 import { SuggestedResponseModal } from "./SuggestedResponseModal";
 import { useMarkObjectionHandled } from "@/hooks/useMarkObjectionHandled";
+import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
+
+/**
+ * Gera uma chave estável e curta para persistir preferências por objeção
+ * (normaliza acentos/caixa, remove não-alfanuméricos e inclui o tamanho
+ * original como anti-colisão simples).
+ */
+function objectionStorageKey(prefix: string, objection: string): string {
+  const slug = objection
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 80);
+  return `relateiq:${prefix}:${slug}:${objection.length}`;
+}
 
 const PERIOD_TO_DAYS: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90 };
 
@@ -69,7 +86,10 @@ interface ObjectionCardProps {
 }
 
 const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = usePersistentBoolean(
+    objectionStorageKey("objection-suggested-expanded", o.objection),
+    false,
+  );
   const [copied, setCopied] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
