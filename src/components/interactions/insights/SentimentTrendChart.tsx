@@ -507,7 +507,29 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
             <YAxis yAxisId="pct" orientation="right" domain={[0, 100]} tickFormatter={(v) => `${v}%`} stroke="hsl(var(--muted-foreground))" fontSize={11} hide={!showPositivePctLine} />
             <YAxis yAxisId="volume" orientation="right" domain={[0, "dataMax"]} hide />
             <Tooltip content={<WeeklySentimentTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Legend
+              wrapperStyle={{ fontSize: 11 }}
+              formatter={(value: string) => {
+                if (value === "Misto") {
+                  if (mixedStats.totalMixed === 0) {
+                    return (
+                      <span className="text-muted-foreground italic">
+                        Misto <span className="text-[10px]">(0 no período)</span>
+                      </span>
+                    );
+                  }
+                  return (
+                    <span className="text-warning font-semibold">
+                      Misto{" "}
+                      <span className="text-[10px] text-warning/80 font-normal tabular-nums">
+                        ({mixedStats.totalMixed} · {mixedStats.pct}%)
+                      </span>
+                    </span>
+                  );
+                }
+                return <span className="text-foreground">{value}</span>;
+              }}
+            />
             {showRefLines && summary?.bestWeek && (
               <ReferenceLine yAxisId="count" x={normalizeWeek(summary.bestWeek.week)} stroke="hsl(var(--success))" strokeDasharray="2 2" />
             )}
