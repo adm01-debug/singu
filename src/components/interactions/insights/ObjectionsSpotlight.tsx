@@ -214,6 +214,20 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
                 {style.label}
               </Badge>
             )}
+            {appliedCount > 0 && (
+              <Badge
+                variant="outline"
+                className="text-[10px] h-4 px-1.5 gap-1 border-success/40 text-success"
+                title={
+                  lastAppliedAt
+                    ? `Você aplicou esta resposta ${appliedCount}× — última em ${new Date(lastAppliedAt).toLocaleDateString("pt-BR")}`
+                    : `Aplicada ${appliedCount}×`
+                }
+              >
+                <CheckCircle2 className="h-2.5 w-2.5" />
+                Aplicada {appliedCount}×
+              </Badge>
+            )}
           </div>
         </div>
         <div className="flex flex-col items-end gap-1 shrink-0">
