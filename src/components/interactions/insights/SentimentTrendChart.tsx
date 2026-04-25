@@ -89,7 +89,7 @@ function pctClass(pct: number): string {
   return "text-muted-foreground";
 }
 
-interface TooltipExtra { positivePctMA?: number | null; annotations?: SentimentAnnotation[] }
+interface TooltipExtra { positivePctMA?: number | null; maWindow?: number; annotations?: SentimentAnnotation[] }
 
 const SHOW_ALL_ROWS_KEY = "singu:sentiment-trend:tooltip-show-all-rows";
 
