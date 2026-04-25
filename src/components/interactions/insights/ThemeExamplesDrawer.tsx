@@ -319,8 +319,9 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       totalCap: 5,
       maxPerSource: 2,
       window: getExcerptWindow(preset),
+      matchMode,
     });
-  }, [interactions, effectiveKeywords, preset]);
+  }, [interactions, effectiveKeywords, preset, matchMode]);
 
   const fallbackPassages = useMemo(() => {
     if (excerpts.length > 0) return [];
