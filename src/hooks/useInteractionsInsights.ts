@@ -47,6 +47,29 @@ export interface SentimentTrendSummary {
   totalInteractions: number;
 }
 
+export interface ObjectionsTrendPoint {
+  week: string;
+  /** Ocorrências de objeção com `handled === false` no período. */
+  critical: number;
+  /** Ocorrências de objeção com `handled === true` (mencionadas mas tratadas). */
+  attention: number;
+  /** Total de ocorrências (critical + attention). */
+  total: number;
+  /** % de objeções não tratadas (risco). */
+  riskPct: number;
+}
+
+export interface ObjectionsTrendSummary {
+  /** Variação em pp do riskPct entre 2ª e 1ª metade do período. */
+  deltaRiskPp: number;
+  direction: "up" | "stable" | "down";
+  peakWeek: { week: string; critical: number } | null;
+  lowWeek: { week: string; critical: number } | null;
+  totalCritical: number;
+  totalAttention: number;
+}
+
+
 const periodToDays: Record<Period, number> = { "7d": 7, "30d": 30, "90d": 90 };
 
 function startOfWeekIso(d: Date): string {
