@@ -137,11 +137,13 @@ const ExcerptItem = memo(function ExcerptItem({
   excerpt,
   interaction,
   terms,
+  matchCount,
   onClose,
 }: {
   excerpt: Excerpt;
   interaction: InteractionRow | undefined;
   terms: string[];
+  matchCount?: number;
   onClose: () => void;
 }) {
   return (
@@ -151,11 +153,20 @@ const ExcerptItem = memo(function ExcerptItem({
         <p className="text-sm text-foreground leading-relaxed">
           <MarkExcerpt text={excerpt.text} terms={terms} />
         </p>
+        {typeof matchCount === "number" && matchCount > 0 && (
+          <Badge
+            variant="outline"
+            className="h-5 shrink-0 text-[10px] bg-warning/10 border-warning/40"
+            title={`${matchCount} ocorr\u00eancia${matchCount === 1 ? "" : "s"} de keywords neste trecho`}
+          >
+            {matchCount}
+          </Badge>
+        )}
       </div>
       <footer className="flex items-center justify-between gap-2 pt-1 border-t border-border/40">
         <span className="text-[10px] text-muted-foreground truncate">
-          {interaction?.title ?? "Sem título"} · {interaction?.type ?? "—"}
-          {interaction?.created_at ? ` · ${new Date(interaction.created_at).toLocaleDateString("pt-BR")}` : ""}
+          {interaction?.title ?? "Sem t\u00edtulo"} \u00b7 {interaction?.type ?? "\u2014"}
+          {interaction?.created_at ? ` \u00b7 ${new Date(interaction.created_at).toLocaleDateString("pt-BR")}` : ""}
         </span>
         {interaction?.contact_id && (
           <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1 shrink-0">
