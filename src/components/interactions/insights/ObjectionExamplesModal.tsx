@@ -246,6 +246,43 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
           </div>
         </div>
 
+        {/* Filtros por tipo de interação — contagens recalculadas no intervalo de datas */}
+        {!isLoading && dateFiltered.length > 0 && (
+          <div
+            className="flex flex-wrap items-center gap-1.5 pt-2"
+            role="group"
+            aria-label="Filtrar por tipo de interação"
+          >
+            <span className="text-[11px] text-muted-foreground mr-1">Tipo:</span>
+            {TYPE_BUCKETS.map(({ key, label, Icon }) => {
+              const count = typeCounts[key];
+              const active = selectedTypes.has(key);
+              const disabled = count === 0 && !active;
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => toggleType(key)}
+                  disabled={disabled}
+                  aria-pressed={active}
+                  className={cn(
+                    "inline-flex items-center gap-1 h-7 px-2 rounded-full border text-[11px] font-medium transition-colors",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                    active
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border/60 bg-background text-foreground/80 hover:bg-muted",
+                    disabled && "opacity-50 cursor-not-allowed hover:bg-background",
+                  )}
+                >
+                  <Icon className="h-3 w-3" />
+                  {label}
+                  <span className="tabular-nums opacity-80">({count})</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* Lista paginada */}
         <div className="flex-1 overflow-y-auto -mx-6 px-6 pt-3 space-y-3 min-h-0">
           {isLoading && (
