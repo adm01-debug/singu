@@ -13,8 +13,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   ExternalLink,
-  ChevronLeft,
-  ChevronRight,
   RotateCcw,
   Calendar as CalendarIcon,
   Search,
@@ -30,9 +28,10 @@ import {
   Meh,
   ThumbsUp,
   Loader2,
+  ChevronDown,
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
 import { cn } from "@/lib/utils";
@@ -67,7 +66,8 @@ interface ContactSummary {
   company: string | null;
 }
 
-const PAGE_SIZE = 10;
+/** Tamanho de cada lote incremental do "Carregar mais". */
+const PAGE_SIZE = 20;
 
 /** Buckets de tipo expostos como filtros no modal. */
 type TypeBucket = "whatsapp" | "call" | "audio" | "transcript" | "other";
@@ -119,34 +119,57 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     category: objection?.category ?? null,
   });
 
-  // Filtros de busca por data, tipo e paginação
+  // Filtros de busca por data e tipo
   const [dateFrom, setDateFrom] = useState<string>("");
   const [dateTo, setDateTo] = useState<string>("");
   const [selectedTypes, setSelectedTypes] = useState<Set<TypeBucket>>(new Set());
-  const [page, setPage] = useState(1);
 
-  // Reseta filtros e página ao abrir nova objeção
+  // Reseta filtros ao abrir nova objeção
   useEffect(() => {
     setDateFrom("");
     setDateTo("");
     setSelectedTypes(new Set());
-    setPage(1);
   }, [objectionKey]);
 
-  const { data: examples = [], isLoading, isError, refetch } = useQuery({
+  const totalIds = ids.length;
+
+  const {
+    data,
+    isLoading,
+    isError,
+    refetch,
+    hasNextPage,
+    isFetchingNextPage,
+    fetchNextPage,
+  } = useInfiniteQuery<Example[], Error, { pages: Example[][]; pageParams: number[] }, readonly unknown[], number>({
     queryKey: ["objection-examples-full", objectionKey, idsKey],
-    enabled: !!objection && ids.length > 0,
+    enabled: !!objection && totalIds > 0,
     staleTime: 5 * 60 * 1000,
-    queryFn: async (): Promise<Example[]> => {
+    initialPageParam: 0,
+    getNextPageParam: (_last, allPages) => {
+      const loaded = allPages.reduce((acc, p) => acc + p.length, 0);
+      return loaded < totalIds ? loaded : undefined;
+    },
+    queryFn: async ({ pageParam }): Promise<Example[]> => {
+      const offset = typeof pageParam === "number" ? pageParam : 0;
+      const slice = ids.slice(offset, offset + PAGE_SIZE);
+      if (slice.length === 0) return [];
       const { data, error } = await supabase
         .from("interactions")
         .select("id, title, type, created_at, content, contact_id, sentiment")
-        .in("id", ids)
+        .in("id", slice)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return Array.isArray(data) ? (data as Example[]) : [];
     },
   });
+
+  // Achata todas as páginas carregadas até o momento.
+  const examples = useMemo<Example[]>(
+    () => (data?.pages ?? []).flat(),
+    [data?.pages],
+  );
+  const loadedCount = examples.length;
 
   // IDs únicos de contatos presentes nos exemplos (para buscar mini-resumo).
   const contactIds = useMemo(() => {
@@ -207,17 +230,8 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     return dateFiltered.filter((ex) => selectedTypes.has(bucketOf(ex.type)));
   }, [dateFiltered, selectedTypes]);
 
-  // Reset de página quando filtros mudam ou resultado encolhe
-  useEffect(() => {
-    setPage(1);
-  }, [dateFrom, dateTo, selectedTypes]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const pageItems = useMemo(() => {
-    const start = (safePage - 1) * PAGE_SIZE;
-    return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, safePage]);
+  // Itens renderizados = todos os carregados que passaram nos filtros.
+  const pageItems = filtered;
 
   /**
    * Sentimento predominante por contato — calculado sobre o conjunto já filtrado
@@ -567,36 +581,43 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
             })}
         </div>
 
-        {/* Paginação */}
-        {!isLoading && !isError && filtered.length > 0 && totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-border/60 pt-3">
+        {/* Carregar mais (incremental) */}
+        {!isLoading && !isError && totalIds > 0 && (
+          <div className="flex items-center justify-between border-t border-border/60 pt-3 gap-3">
             <span className="text-[11px] text-muted-foreground tabular-nums">
-              Página {safePage} de {totalPages}
+              {loadedCount < totalIds ? (
+                <>
+                  Carregadas {loadedCount} de {totalIds}
+                  {hasFilters && filtered.length !== loadedCount && (
+                    <> · {filtered.length} no filtro atual</>
+                  )}
+                </>
+              ) : (
+                <>
+                  Todas as {totalIds} {totalIds === 1 ? "conversa" : "conversas"} carregadas
+                </>
+              )}
             </span>
-            <div className="flex items-center gap-2">
+            {hasNextPage && (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={safePage === 1}
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
                 className="h-8 gap-1"
               >
-                <ChevronLeft className="h-3 w-3" />
-                Anterior
+                {isFetchingNextPage ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <ChevronDown className="h-3 w-3" />
+                )}
+                Carregar mais
+                <span className="text-muted-foreground tabular-nums">
+                  ({Math.min(PAGE_SIZE, totalIds - loadedCount)})
+                </span>
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={safePage === totalPages}
-                className="h-8 gap-1"
-              >
-                Próxima
-                <ChevronRight className="h-3 w-3" />
-              </Button>
-            </div>
+            )}
           </div>
         )}
       </DialogContent>

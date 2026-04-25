@@ -215,7 +215,10 @@ export function useInteractionsInsights(period: Period = "30d") {
         if (o.handled) cur.handled += 1;
         else cur.unhandled += 1;
         if (!cur.suggestedResponse && o.suggested_response) cur.suggestedResponse = o.suggested_response;
-        if (cur.examples.length < 5 && a.interaction_id) cur.examples.push(a.interaction_id);
+        // Sem cap: o modal pagina/carrega incrementalmente os exemplos.
+        if (a.interaction_id && !cur.examples.includes(a.interaction_id)) {
+          cur.examples.push(a.interaction_id);
+        }
         objMap.set(key, cur);
       }
     }
