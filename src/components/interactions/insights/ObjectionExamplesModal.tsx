@@ -581,36 +581,43 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
             })}
         </div>
 
-        {/* Paginação */}
-        {!isLoading && !isError && filtered.length > 0 && totalPages > 1 && (
-          <div className="flex items-center justify-between border-t border-border/60 pt-3">
+        {/* Carregar mais (incremental) */}
+        {!isLoading && !isError && totalIds > 0 && (
+          <div className="flex items-center justify-between border-t border-border/60 pt-3 gap-3">
             <span className="text-[11px] text-muted-foreground tabular-nums">
-              Página {safePage} de {totalPages}
+              {loadedCount < totalIds ? (
+                <>
+                  Carregadas {loadedCount} de {totalIds}
+                  {hasFilters && filtered.length !== loadedCount && (
+                    <> · {filtered.length} no filtro atual</>
+                  )}
+                </>
+              ) : (
+                <>
+                  Todas as {totalIds} {totalIds === 1 ? "conversa" : "conversas"} carregadas
+                </>
+              )}
             </span>
-            <div className="flex items-center gap-2">
+            {hasNextPage && (
               <Button
                 type="button"
                 variant="outline"
                 size="sm"
-                onClick={() => setPage((p) => Math.max(1, p - 1))}
-                disabled={safePage === 1}
+                onClick={() => fetchNextPage()}
+                disabled={isFetchingNextPage}
                 className="h-8 gap-1"
               >
-                <ChevronLeft className="h-3 w-3" />
-                Anterior
+                {isFetchingNextPage ? (
+                  <Loader2 className="h-3 w-3 animate-spin" />
+                ) : (
+                  <ChevronDown className="h-3 w-3" />
+                )}
+                Carregar mais
+                <span className="text-muted-foreground tabular-nums">
+                  ({Math.min(PAGE_SIZE, totalIds - loadedCount)})
+                </span>
               </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                disabled={safePage === totalPages}
-                className="h-8 gap-1"
-              >
-                Próxima
-                <ChevronRight className="h-3 w-3" />
-              </Button>
-            </div>
+            )}
           </div>
         )}
       </DialogContent>
