@@ -133,10 +133,10 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
           Semana de {formatWeekRange(point.week)}
         </p>
         {total === 0 ? (
-          <p className="text-xs text-muted-foreground">sem conversas</p>
+          <p className="text-xs text-muted-foreground">Volume: 0 interações</p>
         ) : (
-          <p className="text-xs font-medium text-foreground">
-            Total: <span className="tabular-nums">{total}</span> {total === 1 ? "conversa" : "conversas"}
+          <p className="text-xs font-semibold text-foreground">
+            Volume: <span className="tabular-nums">{total}</span> {total === 1 ? "interação" : "interações"}
           </p>
         )}
       </div>
