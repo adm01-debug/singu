@@ -36,38 +36,13 @@ interface Props {
   contactId?: string;
 }
 
-function normalizeWeek(w: string): string {
-  // Canonicaliza para 'YYYY-MM-DD' independente do formato de entrada.
-  // Garante consistência entre dataKey do eixo X, anotações (week_start),
-  // ReferenceLines, tooltip label e weekOptions do dialog.
-  if (typeof w !== "string" || w.length === 0) return w;
-  return w.length >= 10 ? w.slice(0, 10) : w;
-}
-
-function parseWeekLocal(w: string): Date {
-  // Força parse em fuso local (evita shift de -1 dia em TZs negativos quando
-  // strings 'YYYY-MM-DD' são interpretadas como UTC pelo construtor Date).
-  const iso = normalizeWeek(w);
-  return new Date(`${iso}T00:00:00`);
-}
-
-const ISO_WEEK_RE = /^\d{4}-\d{2}-\d{2}$/;
-
-function isValidWeek(w: unknown): w is string {
-  if (typeof w !== "string" || w.length === 0) return false;
-  const iso = normalizeWeek(w);
-  if (!ISO_WEEK_RE.test(iso)) return false;
-  const ts = parseWeekLocal(iso).getTime();
-  return Number.isFinite(ts);
-}
-
-function weekTimestamp(w: string): number {
-  const ts = parseWeekLocal(w).getTime();
-  // Fallback: semanas inválidas (NaN) vão para o final do sort em vez de
-  // colocar todo o array em estado indeterminado (NaN no comparator viola
-  // a ordem total exigida por Array.prototype.sort).
-  return Number.isFinite(ts) ? ts : Number.POSITIVE_INFINITY;
-}
+import {
+  normalizeWeek,
+  parseWeekLocal,
+  isValidWeek,
+  weekTimestamp,
+  normalizeAndSortWeekPoints,
+} from "./weekUtils";
 
 function formatWeek(w: string): string {
   const d = parseWeekLocal(w);
