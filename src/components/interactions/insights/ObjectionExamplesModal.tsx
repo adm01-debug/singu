@@ -110,6 +110,34 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     },
   });
 
+  // IDs únicos de contatos presentes nos exemplos (para buscar mini-resumo).
+  const contactIds = useMemo(() => {
+    const set = new Set<string>();
+    for (const ex of examples) if (ex.contact_id) set.add(ex.contact_id);
+    return Array.from(set);
+  }, [examples]);
+  const contactIdsKey = contactIds.join(",");
+
+  const { data: contactsMap = {} } = useQuery({
+    queryKey: ["objection-examples-contacts", contactIdsKey],
+    enabled: contactIds.length > 0,
+    staleTime: 5 * 60 * 1000,
+    queryFn: async (): Promise<Record<string, ContactSummary>> => {
+      const { data, error } = await supabase
+        .from("contacts")
+        .select("id, first_name, last_name, role_title, company:companies(name, nome_fantasia)")
+        .in("id", contactIds);
+      if (error) throw error;
+      const map: Record<string, ContactSummary> = {};
+      for (const c of (data ?? []) as ContactRow[]) {
+        const name = [c.first_name, c.last_name].filter(Boolean).join(" ").trim() || null;
+        const company = c.company?.nome_fantasia || c.company?.name || null;
+        map[c.id] = { name, role: c.role_title ?? null, company };
+      }
+      return map;
+    },
+  });
+
   // Filtro por intervalo de datas (inclusivo) — base para os contadores de tipo.
   const dateFiltered = useMemo(() => {
     if (!dateFrom && !dateTo) return examples;
