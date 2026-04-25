@@ -45,6 +45,20 @@ interface Example {
   sentiment: string | null;
 }
 
+interface ContactRow {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  role_title: string | null;
+  company: { name: string | null; nome_fantasia: string | null } | null;
+}
+
+interface ContactSummary {
+  name: string | null;
+  role: string | null;
+  company: string | null;
+}
+
 const PAGE_SIZE = 10;
 
 /** Buckets de tipo expostos como filtros no modal. */
