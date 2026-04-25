@@ -1,11 +1,12 @@
 import { memo, useMemo, useState, useCallback } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check, ExternalLink, Filter } from "lucide-react";
+import { Flame, AlertTriangle, CheckCircle2, Lightbulb, ChevronDown, ChevronUp, Copy, Check, ExternalLink, Filter, Wand2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
 import { ObjectionExamplesDrawer } from "./ObjectionExamplesDrawer";
+import { SuggestedResponseModal } from "./SuggestedResponseModal";
 
 const PERIOD_TO_DAYS: Record<string, number> = { "7d": 7, "30d": 30, "90d": 90 };
 
@@ -70,6 +71,7 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
   const [expanded, setExpanded] = useState(false);
   const [copied, setCopied] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [composerOpen, setComposerOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const examplesCount = Array.isArray(o.examples) ? o.examples.length : 0;
   const hasExamples = examplesCount > 0;
@@ -254,6 +256,15 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
                   </>
                 )}
               </button>
+              <button
+                type="button"
+                onClick={() => setComposerOpen(true)}
+                aria-label="Abrir modal para editar e enviar a resposta sugerida"
+                className="inline-flex items-center gap-1 text-[11px] font-medium text-primary hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring rounded-sm"
+              >
+                <Wand2 className="h-3 w-3" />
+                Criar resposta sugerida
+              </button>
               {hasExamples && (
                 <button
                   type="button"
@@ -289,6 +300,15 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
         objection={drawerOpen ? o : null}
         onClose={() => setDrawerOpen(false)}
       />
+      {composerOpen && (
+        <SuggestedResponseModal
+          open={composerOpen}
+          onOpenChange={setComposerOpen}
+          objection={o.objection}
+          category={o.category}
+          suggestedResponse={suggested}
+        />
+      )}
     </div>
   );
 });
