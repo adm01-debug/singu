@@ -346,7 +346,7 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
       const annotations = annotationsByWeek.get(p.week) ?? [];
       return { ...p, positivePctMA, maWindow: smoothWindow, smoothActive: smoothEnabled, annotations };
     });
-  }, [sortedData, annotationsByWeek, smoothWindow]);
+  }, [sortedData, annotationsByWeek, smoothWindow, smoothEnabled]);
 
   const weekOptions = useMemo(() => sortedData.map((p) => p.week), [sortedData]);
 
