@@ -54,6 +54,17 @@ function CompanyCardWithContextImpl({
   };
 
   const interactionsHref = `/interacoes?company=${encodeURIComponent(company.id)}`;
+  const detailHref = `/empresas/${company.id}`;
+
+  const handleCardActivate = useCallback((e: ReactMouseEvent<HTMLDivElement>) => {
+    // Permite Ctrl/⌘/middle-click abrir em nova aba via comportamento nativo do <a>
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+    // Ignora cliques originados em elementos interativos internos (botões, links, inputs)
+    const target = e.target as HTMLElement;
+    if (target.closest('a, button, [role="menuitem"], input, [data-no-card-nav]')) return;
+    e.preventDefault();
+    navigate(detailHref);
+  }, [navigate, detailHref]);
 
   // Clique no nome / botão "Ver interações":
   // - Ctrl/⌘/middle-click → deixa o navegador abrir em nova aba (target="_blank")
