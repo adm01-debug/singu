@@ -441,60 +441,10 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   }, [annotationsByWeek]);
   const allCategoriesActive = annCategoryFilter.size === CATEGORY_KEYS.length;
 
-  const { sortedData, invalidWeekCount } = useMemo(() => {
-    const safe = Array.isArray(data) ? data : [];
-    let dropped = 0;
-    const normalized: SentimentTrendPoint[] = [];
-    for (const p of safe) {
-      if (!p || typeof p.week !== "string" || p.week.length === 0) {
-        dropped++;
-        continue;
-      }
-      const week = normalizeWeek(p.week);
-      if (!isValidWeek(week)) {
-        // Fallback: descarta semanas inválidas em vez de propagar NaN
-        // pelo sort por timestamp (NaN viola ordenação total e poderia
-        // gerar saídas não-determinísticas no Array.prototype.sort).
-        dropped++;
-        continue;
-      }
-      normalized.push({ ...p, week });
-    }
-
-    // Dedup defensivo por semana com MERGE (soma) dos contadores.
-    const merged = new Map<string, SentimentTrendPoint>();
-    for (const p of normalized) {
-      const existing = merged.get(p.week);
-      if (!existing) {
-        merged.set(p.week, { ...p });
-        continue;
-      }
-      const positive = (existing.positive ?? 0) + (p.positive ?? 0);
-      const neutral = (existing.neutral ?? 0) + (p.neutral ?? 0);
-      const negative = (existing.negative ?? 0) + (p.negative ?? 0);
-      const mixed = (existing.mixed ?? 0) + (p.mixed ?? 0);
-      const total = (existing.total ?? 0) + (p.total ?? 0);
-      const positivePct = total > 0 ? Math.round((positive / total) * 100) : 0;
-      merged.set(p.week, {
-        week: existing.week,
-        positive,
-        neutral,
-        negative,
-        mixed,
-        total,
-        positivePct,
-      });
-    }
-    const unique = Array.from(merged.values());
-
-    // Pré-computa timestamps uma vez para evitar parsing repetido no
-    // comparator e para garantir comparação numérica estável.
-    const tsCache = new Map<string, number>();
-    for (const p of unique) tsCache.set(p.week, weekTimestamp(p.week));
-    unique.sort((a, b) => (tsCache.get(a.week) ?? 0) - (tsCache.get(b.week) ?? 0));
-
-    return { sortedData: unique, invalidWeekCount: dropped };
-  }, [data]);
+  const { sortedData, invalidWeekCount } = useMemo(
+    () => normalizeAndSortWeekPoints<SentimentTrendPoint>(data),
+    [data]
+  );
 
   // Pontos com média móvel calculados a partir EXATAMENTE do mesmo
   // sortedData usado por evolutionStats e confidenceInfo. Isolar essa etapa
