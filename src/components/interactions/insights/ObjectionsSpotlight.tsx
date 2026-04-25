@@ -12,6 +12,7 @@ import { SuggestedResponseModal } from "./SuggestedResponseModal";
 import { useMarkObjectionHandled } from "@/hooks/useMarkObjectionHandled";
 import { usePersistentBoolean } from "@/hooks/usePersistentBoolean";
 import { useObjectionContextSummary } from "@/hooks/useObjectionContextSummary";
+import { useAppliedResponses } from "@/hooks/useAppliedResponses";
 
 /**
  * Gera uma chave estável e curta para persistir preferências por objeção
