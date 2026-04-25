@@ -636,42 +636,64 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
             </>
           )}
 
-          {!loading && displayItems.length === 0 && interactions.length > 0 && (
-            <>
-              <p className="text-xs text-muted-foreground italic">
-                Nenhuma menção literal encontrada nas transcrições. Mostrando interações relacionadas.
-              </p>
-              {interactions.map((ex) => (
-                <article key={ex.id} className="rounded-md border border-border/60 bg-card p-3 space-y-2">
-                  <header className="flex items-center justify-between gap-2">
-                    <h4 className="text-sm font-medium text-foreground truncate">{ex.title ?? "Sem título"}</h4>
-                    {ex.sentiment && (
-                      <Badge variant="outline" className="text-[10px] capitalize">
-                        {ex.sentiment}
-                      </Badge>
-                    )}
-                  </header>
-                  {ex.content && <p className="text-xs text-muted-foreground line-clamp-3">{ex.content}</p>}
-                  <footer className="flex items-center justify-between pt-1">
-                    <span className="text-[10px] text-muted-foreground">
-                      {ex.type} · {ex.created_at ? new Date(ex.created_at).toLocaleDateString("pt-BR") : ""}
-                    </span>
-                    {ex.contact_id && (
-                      <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1">
-                        <Link to={`/contatos/${ex.contact_id}/ficha-360`} onClick={onClose}>
-                          Ficha 360 <ExternalLink className="h-3 w-3" />
-                        </Link>
-                      </Button>
-                    )}
-                  </footer>
-                </article>
-              ))}
-            </>
-          )}
+          {/*
+            Bloco intermediário: temos interações no período, mas nenhuma passagem
+            (nem excerto literal, nem sugestão do fallback) pôde ser extraída.
+            Mostramos cards "crus" das interações como último recurso.
+          */}
+          {!loading &&
+            displayItems.length === 0 &&
+            interactions.length > 0 && (
+              <>
+                <p className="text-xs text-muted-foreground italic">
+                  Sem passagens recortáveis nas transcrições deste período. Mostrando as interações
+                  relacionadas para você abrir manualmente.
+                </p>
+                {interactions.map((ex) => (
+                  <article key={ex.id} className="rounded-md border border-border/60 bg-card p-3 space-y-2">
+                    <header className="flex items-center justify-between gap-2">
+                      <h4 className="text-sm font-medium text-foreground truncate">{ex.title ?? "Sem título"}</h4>
+                      {ex.sentiment && (
+                        <Badge variant="outline" className="text-[10px] capitalize">
+                          {ex.sentiment}
+                        </Badge>
+                      )}
+                    </header>
+                    {ex.content && <p className="text-xs text-muted-foreground line-clamp-3">{ex.content}</p>}
+                    <footer className="flex items-center justify-between pt-1">
+                      <span className="text-[10px] text-muted-foreground">
+                        {ex.type} · {ex.created_at ? new Date(ex.created_at).toLocaleDateString("pt-BR") : ""}
+                      </span>
+                      {ex.contact_id && (
+                        <Button asChild size="sm" variant="ghost" className="h-7 text-xs gap-1">
+                          <Link to={`/contatos/${ex.contact_id}/ficha-360`} onClick={onClose}>
+                            Ficha 360 <ExternalLink className="h-3 w-3" />
+                          </Link>
+                        </Button>
+                      )}
+                    </footer>
+                  </article>
+                ))}
+              </>
+            )}
 
-          {!loading && interactions.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-8">Nenhum exemplo disponível.</p>
-          )}
+          {/*
+            Estado vazio "real": só aparece quando NÃO há matches literais,
+            NEM passagens sugeridas pelo fallback, NEM interações brutas no período.
+            Tipicamente: filtro de período sem dados ou tema sem nenhum exemplo associado.
+          */}
+          {!loading &&
+            displayItems.length === 0 &&
+            interactions.length === 0 && (
+              <div className="flex flex-col items-center justify-center text-center py-10 px-4 gap-2">
+                <Info className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+                <p className="text-sm font-medium text-foreground">Nenhum exemplo disponível</p>
+                <p className="text-xs text-muted-foreground max-w-xs leading-relaxed">
+                  Não encontramos interações associadas a este tema no período selecionado. Ajuste o
+                  intervalo de datas ou tente outro tema para ver passagens relacionadas.
+                </p>
+              </div>
+            )}
         </div>
       </SheetContent>
     </Sheet>
