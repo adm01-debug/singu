@@ -23,6 +23,11 @@ import {
   Mic,
   FileText,
   HelpCircle,
+  Building2,
+  Briefcase,
+  Smile,
+  Frown,
+  Meh,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
