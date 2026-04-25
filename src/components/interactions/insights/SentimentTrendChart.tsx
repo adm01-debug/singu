@@ -344,7 +344,7 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
       const sumTot = window.reduce((a, w) => a + (w.total ?? 0), 0);
       const positivePctMA = sumTot > 0 ? Math.round((sumPos / sumTot) * 100) : null;
       const annotations = annotationsByWeek.get(p.week) ?? [];
-      return { ...p, positivePctMA, maWindow: smoothWindow, annotations };
+      return { ...p, positivePctMA, maWindow: smoothWindow, smoothActive: smoothEnabled, annotations };
     });
   }, [sortedData, annotationsByWeek, smoothWindow]);
 
