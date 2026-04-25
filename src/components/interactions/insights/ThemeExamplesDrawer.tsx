@@ -466,6 +466,19 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
                 {p === "short" ? "Curto" : p === "medium" ? "Médio" : "Longo"}
               </button>
             ))}
+            {preset !== DEFAULT_EXCERPT_PRESET && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 ml-1 text-[11px] gap-1 text-muted-foreground hover:text-foreground"
+                onClick={resetWindow}
+                title="Restaurar o tamanho do trecho para o padrão (Médio) e limpar o valor salvo"
+                aria-label="Resetar janela do trecho para o padrão Médio"
+              >
+                <RotateCcw className="h-3 w-3" /> Resetar janela
+              </Button>
+            )}
           </div>
 
           <div
