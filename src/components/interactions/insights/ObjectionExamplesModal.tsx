@@ -1,3 +1,4 @@
+import type * as React from "react";
 import { memo, useMemo, useState, useEffect } from "react";
 import {
   Dialog,
