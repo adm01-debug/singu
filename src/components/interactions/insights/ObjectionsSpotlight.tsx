@@ -74,8 +74,15 @@ const ObjectionCard = memo(function ObjectionCard({ o }: ObjectionCardProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [composerOpen, setComposerOpen] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const markHandled = useMarkObjectionHandled();
   const examplesCount = Array.isArray(o.examples) ? o.examples.length : 0;
   const hasExamples = examplesCount > 0;
+  const allHandled = o.unhandled === 0 && o.count > 0;
+
+  const handleToggleHandled = useCallback(() => {
+    markHandled.mutate({ objection: o.objection, handled: !allHandled });
+  }, [markHandled, o.objection, allHandled]);
+
 
   const severity = getSeverity(o);
   const style = SEVERITY_STYLES[severity];
