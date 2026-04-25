@@ -354,6 +354,7 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
     // volume abaixo do piso mínimo, omitimos o ponto (null) para evitar
     // tendência baseada em amostra estatisticamente fraca.
     const MIN_WINDOW_VOLUME = 3;
+    const LOW_WINDOW_VOLUME = 8;
     return sortedData.map((p, i) => {
       const start = Math.max(0, i - (smoothWindow - 1));
       const win = sortedData.slice(start, i + 1);
@@ -362,17 +363,34 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
       const positivePctMA =
         sumTot >= MIN_WINDOW_VOLUME ? Math.round((sumPos / sumTot) * 100) : null;
       const annotations = annotationsByWeek.get(p.week) ?? [];
+      const isPartialWindow = win.length < smoothWindow;
+      const isLowVolume = sumTot > 0 && sumTot < LOW_WINDOW_VOLUME;
       return {
         ...p,
         positivePctMA,
         maWindow: smoothWindow,
+        maWindowSize: win.length,
         maWindowVolume: sumTot,
+        maWindowPartial: isPartialWindow,
+        maWindowLowVolume: isLowVolume,
         maWindowBelowThreshold: sumTot > 0 && sumTot < MIN_WINDOW_VOLUME,
         smoothActive: smoothEnabled,
         annotations,
       };
     });
   }, [sortedData, annotationsByWeek, smoothWindow, smoothEnabled]);
+
+  const maQualityCounts = useMemo(() => {
+    let partial = 0;
+    let low = 0;
+    for (const p of dataWithMA) {
+      if (p.smoothActive && typeof p.positivePctMA === "number") {
+        if (p.maWindowPartial) partial++;
+        if (p.maWindowLowVolume) low++;
+      }
+    }
+    return { partial, low };
+  }, [dataWithMA]);
 
   const weekOptions = useMemo(() => sortedData.map((p) => p.week), [sortedData]);
 
