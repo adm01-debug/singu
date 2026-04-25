@@ -44,6 +44,7 @@ function CompanyCardWithContextImpl({
   const IndustryIcon = industryIcons[company.industry || ''] || Building2;
   const [isInlineEditing, setIsInlineEditing] = useState(false);
   const [interactionsOpen, setInteractionsOpen] = useState(false);
+  const navigate = useNavigate();
   const { prefetchCompany } = usePrefetch();
   const prefetchFn = useCallback(() => { prefetchCompany(company.id); }, [company.id, prefetchCompany]);
   const hoverProps = usePrefetchOnHover(prefetchFn, 150);
