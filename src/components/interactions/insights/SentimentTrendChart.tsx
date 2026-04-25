@@ -757,19 +757,43 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
                 dot={false}
               />
             )}
-            {annotationDots.map((d) => (
-              <ReferenceDot
-                key={d.week}
-                yAxisId="pct"
-                x={d.week}
-                y={100}
-                r={5}
-                fill={d.color}
-                stroke="hsl(var(--background))"
-                strokeWidth={1.5}
-                ifOverflow="visible"
-              />
-            ))}
+            {annotationDots.map((d) => {
+              const Icon = d.icon;
+              return (
+                <ReferenceDot
+                  key={d.week}
+                  yAxisId="pct"
+                  x={d.week}
+                  y={100}
+                  ifOverflow="visible"
+                  isFront
+                  shape={(props: any) => {
+                    const { cx, cy } = props;
+                    if (cx == null || cy == null) return null;
+                    const r = 9;
+                    return (
+                      <g>
+                        <title>{`${d.label}: ${d.title}${d.count > 1 ? ` (+${d.count - 1})` : ""}`}</title>
+                        <circle cx={cx} cy={cy} r={r} fill={d.color} stroke="hsl(var(--background))" strokeWidth={1.5} />
+                        <foreignObject x={cx - 6} y={cy - 6} width={12} height={12} style={{ pointerEvents: "none" }}>
+                          <div style={{ width: 12, height: 12, display: "flex", alignItems: "center", justifyContent: "center", color: "hsl(var(--background))" }}>
+                            <Icon width={10} height={10} strokeWidth={2.5} />
+                          </div>
+                        </foreignObject>
+                        {d.count > 1 && (
+                          <g>
+                            <circle cx={cx + r - 1} cy={cy - r + 1} r={6} fill="hsl(var(--background))" stroke={d.color} strokeWidth={1} />
+                            <text x={cx + r - 1} y={cy - r + 3} textAnchor="middle" fontSize={8} fontWeight={700} fill={d.color}>
+                              {d.count > 9 ? "9+" : d.count}
+                            </text>
+                          </g>
+                        )}
+                      </g>
+                    );
+                  }}
+                />
+              );
+            })}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
