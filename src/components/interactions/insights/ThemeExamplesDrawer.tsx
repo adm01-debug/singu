@@ -222,11 +222,28 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      window.localStorage.setItem(EXCERPT_PRESET_STORAGE_KEY, preset);
+      // Quando o preset volta ao default, removemos a chave para "limpar" o override
+      // salvo anteriormente — assim o pr\u00f3ximo carregamento usa puramente o default.
+      if (preset === DEFAULT_EXCERPT_PRESET) {
+        window.localStorage.removeItem(EXCERPT_PRESET_STORAGE_KEY);
+      } else {
+        window.localStorage.setItem(EXCERPT_PRESET_STORAGE_KEY, preset);
+      }
     } catch {
       /* ignore quota / private mode errors */
     }
   }, [preset]);
+
+  const resetWindow = () => {
+    setPreset(DEFAULT_EXCERPT_PRESET);
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem(EXCERPT_PRESET_STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
+    }
+  };
 
   const [matchMode, setMatchMode] = useState<MatchMode>(() => {
     if (typeof window === "undefined") return "exact";
