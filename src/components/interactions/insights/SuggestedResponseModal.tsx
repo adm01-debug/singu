@@ -11,8 +11,9 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Lightbulb, Copy, Check, FileText, ExternalLink } from "lucide-react";
+import { Lightbulb, Copy, Check, FileText, ExternalLink, CheckCircle2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAppliedResponses } from "@/hooks/useAppliedResponses";
 
 interface Props {
   open: boolean;
@@ -34,6 +35,9 @@ function SuggestedResponseModalImpl({
   const navigate = useNavigate();
   const [draft, setDraft] = useState<string>(suggestedResponse);
   const [copied, setCopied] = useState(false);
+  const { markApplied, getByObjection } = useAppliedResponses();
+  const previousApplications = getByObjection(objection);
+  const alreadyAppliedCount = previousApplications.length;
 
   // Sincroniza o draft quando o modal reabre com nova objeção.
   // useState com prop inicial não atualiza; reset via key no parent garante remontagem.
@@ -79,6 +83,23 @@ function SuggestedResponseModalImpl({
     }
   }, [draft, objection, navigate, onOpenChange]);
 
+  const handleMarkApplied = useCallback(() => {
+    if (!draft.trim()) {
+      toast.error("Resposta vazia");
+      return;
+    }
+    markApplied.mutate(
+      {
+        objection,
+        category,
+        responseText: draft,
+      },
+      {
+        onSuccess: () => onOpenChange(false),
+      },
+    );
+  }, [draft, objection, category, markApplied, onOpenChange]);
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg">
@@ -95,6 +116,16 @@ function SuggestedResponseModalImpl({
               <Badge variant="outline" className="text-[10px] h-4 px-1.5">
                 {category}
               </Badge>
+              {alreadyAppliedCount > 0 && (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] h-4 px-1.5 gap-1 border-success/40 text-success"
+                  title={`Você já marcou esta resposta como aplicada ${alreadyAppliedCount}× anteriormente`}
+                >
+                  <CheckCircle2 className="h-2.5 w-2.5" />
+                  Aplicada {alreadyAppliedCount}×
+                </Badge>
+              )}
               <span className="text-xs text-foreground line-clamp-2" title={objection}>
                 {objection}
               </span>
@@ -140,6 +171,26 @@ function SuggestedResponseModalImpl({
               <>
                 <Copy className="h-3.5 w-3.5" />
                 Copiar
+              </>
+            )}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={handleMarkApplied}
+            disabled={!draft.trim() || markApplied.isPending}
+            className="gap-1.5"
+            title="Registrar que você usou esta resposta numa negociação"
+          >
+            {markApplied.isPending ? (
+              <>
+                <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                Marcando…
+              </>
+            ) : (
+              <>
+                <CheckCircle2 className="h-3.5 w-3.5 text-success" />
+                Marcar como aplicada
               </>
             )}
           </Button>

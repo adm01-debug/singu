@@ -533,6 +533,45 @@ export type Database = {
           },
         ]
       }
+      applied_objection_responses: {
+        Row: {
+          applied_at: string
+          category: string | null
+          created_at: string
+          id: string
+          interaction_id: string | null
+          note: string | null
+          objection: string
+          response_text: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          interaction_id?: string | null
+          note?: string | null
+          objection: string
+          response_text?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          applied_at?: string
+          category?: string | null
+          created_at?: string
+          id?: string
+          interaction_id?: string | null
+          note?: string | null
+          objection?: string
+          response_text?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       attribution_models_cache: {
         Row: {
           allocations: Json
