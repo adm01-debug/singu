@@ -175,11 +175,24 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
                   const count = point[k] ?? 0;
                   const pct = total > 0 ? Math.round((count / total) * 100) : 0;
                   const isZero = count === 0;
+                  const isMixed = k === "mixed";
                   return (
-                    <li key={k} className={cn("space-y-0.5", isZero && "opacity-50")}>
+                    <li
+                      key={k}
+                      className={cn(
+                        "space-y-0.5",
+                        isZero && "opacity-50",
+                        isMixed && !isZero && "rounded-sm bg-warning/10 px-1.5 py-1 -mx-1.5 ring-1 ring-warning/30 opacity-100"
+                      )}
+                    >
                       <div className="flex items-center gap-2 text-xs">
                         <span className={cn("h-2 w-2 rounded-sm shrink-0", tokens.swatch)} aria-hidden />
-                        <span className="flex-1 truncate text-foreground">{tokens.label}</span>
+                        <span className={cn("flex-1 truncate text-foreground", isMixed && !isZero && "font-semibold")}>
+                          {tokens.label}
+                          {isMixed && !isZero && (
+                            <span className="ml-1 text-[9px] uppercase tracking-wide text-warning font-semibold">destaque</span>
+                          )}
+                        </span>
                         <span className="tabular-nums font-medium text-foreground min-w-[1.5rem] text-right">{count}</span>
                         <span className="tabular-nums text-muted-foreground text-[10px] min-w-[2.5rem] text-right">{pct}%</span>
                       </div>
@@ -190,10 +203,20 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
                           aria-hidden
                         />
                       </div>
+                      {isMixed && isZero && (
+                        <p className="text-[10px] text-muted-foreground italic ml-4">
+                          Sem conversas mistas nesta semana.
+                        </p>
+                      )}
                     </li>
                   );
                 })}
               </ul>
+            )}
+            {!showAllRows && (point.mixed ?? 0) === 0 && total > 0 && (
+              <p className="text-[10px] text-warning/90 italic">
+                Misto: 0 nesta semana — sem sinais ambíguos.
+              </p>
             )}
           </div>
         </>
@@ -484,7 +507,29 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
             <YAxis yAxisId="pct" orientation="right" domain={[0, 100]} tickFormatter={(v) => `${v}%`} stroke="hsl(var(--muted-foreground))" fontSize={11} hide={!showPositivePctLine} />
             <YAxis yAxisId="volume" orientation="right" domain={[0, "dataMax"]} hide />
             <Tooltip content={<WeeklySentimentTooltip />} cursor={{ fill: "hsl(var(--muted))", opacity: 0.3 }} />
-            <Legend wrapperStyle={{ fontSize: 11 }} />
+            <Legend
+              wrapperStyle={{ fontSize: 11 }}
+              formatter={(value: string) => {
+                if (value === "Misto") {
+                  if (mixedStats.totalMixed === 0) {
+                    return (
+                      <span className="text-muted-foreground italic">
+                        Misto <span className="text-[10px]">(0 no período)</span>
+                      </span>
+                    );
+                  }
+                  return (
+                    <span className="text-warning font-semibold">
+                      Misto{" "}
+                      <span className="text-[10px] text-warning/80 font-normal tabular-nums">
+                        ({mixedStats.totalMixed} · {mixedStats.pct}%)
+                      </span>
+                    </span>
+                  );
+                }
+                return <span className="text-foreground">{value}</span>;
+              }}
+            />
             {showRefLines && summary?.bestWeek && (
               <ReferenceLine yAxisId="count" x={normalizeWeek(summary.bestWeek.week)} stroke="hsl(var(--success))" strokeDasharray="2 2" />
             )}
