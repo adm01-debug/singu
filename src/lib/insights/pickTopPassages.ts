@@ -84,7 +84,7 @@ export function pickTopPassages(
       .filter((s) => s.score > 0)
       // Tiebreaker por posição (start asc) garante determinismo entre execuções.
       .sort((a, b) => (b.score !== a.score ? b.score - a.score : a.start - b.start))
-      .slice(0, opts.maxPerSource);
+      .slice(0, maxPerSource);
 
     if (scored.length === 0) continue;
     // Re-sort by position to keep narrative order within source
