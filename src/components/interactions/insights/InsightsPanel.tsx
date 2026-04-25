@@ -80,6 +80,21 @@ export function InsightsPanel() {
   // Fechar drawer de temas ao trocar período (bucket é tratado via URL em handlePeriod).
   useEffect(() => { setSelectedTheme(null); }, [period]);
 
+  // Contagens por filtro (sempre sobre o set completo, para alimentar os
+  // badges do toggle independentemente do filtro selecionado).
+  const objectionCounts = useMemo(() => {
+    const all = topObjections.length;
+    const unhandled = topObjections.filter((o) => o.unhandled > 0).length;
+    const critical = topObjections.filter(isCritical).length;
+    return { all, unhandled, critical };
+  }, [topObjections]);
+
+  const filteredObjections = useMemo(() => {
+    if (objectionFilter === "unhandled") return topObjections.filter((o) => o.unhandled > 0);
+    if (objectionFilter === "critical") return topObjections.filter(isCritical);
+    return topObjections;
+  }, [topObjections, objectionFilter]);
+
   const isEmpty = !isLoading && kpis.totalAnalyzed === 0;
 
   return (
