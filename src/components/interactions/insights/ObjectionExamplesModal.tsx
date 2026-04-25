@@ -1,3 +1,4 @@
+import type * as React from "react";
 import { memo, useMemo, useState, useEffect } from "react";
 import {
   Dialog,
@@ -46,6 +47,126 @@ function normalizeText(s: string | null | undefined): string {
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
+}
+
+/** Stopwords PT/EN comuns — filtradas ao extrair termos da objeção. */
+const STOPWORDS = new Set([
+  "the","and","for","with","that","this","from","have","has","not","but","you","your",
+  "are","was","were","will","would","could","should","what","when","where","which",
+  "como","para","pela","pelo","pelos","pelas","mais","menos","muito","pouco","esse",
+  "essa","esses","essas","este","esta","isso","isto","aquele","aquela","sobre","entre",
+  "porque","então","quando","onde","qual","quais","quem","tem","ter","tinha","tive",
+  "sou","ser","foi","foram","seja","sera","será","serão","estar","esta","estamos",
+  "estão","estou","mas","ainda","tambem","também","sem","com","uma","umas","uns",
+  "dos","das","nos","nas","aos","ele","ela","eles","elas","nao","não","sim","faz",
+  "fazer","feito","qualquer","talvez","caso","cada","todo","toda","todos","todas",
+  "apenas","outro","outra","muita","muitas","muitos","fica","ficou",
+]);
+
+/** Extrai termos relevantes (≥3 chars, sem stopwords) — termos longos primeiro. */
+function extractObjectionTerms(objection: string | null | undefined): string[] {
+  const norm = normalizeText(objection);
+  if (!norm) return [];
+  const seen = new Set<string>();
+  const tokens: string[] = [];
+  for (const t of norm.split(/[^a-z0-9]+/i)) {
+    if (t.length >= 3 && !STOPWORDS.has(t) && !seen.has(t)) {
+      seen.add(t);
+      tokens.push(t);
+    }
+  }
+  return tokens.sort((a, b) => b.length - a.length);
+}
+
+/** Constrói uma RegExp /(t1|t2|...)/gi a partir de termos já normalizados. */
+function buildHighlightRegex(terms: string[]): RegExp | null {
+  if (terms.length === 0) return null;
+  const escaped = terms.map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  return new RegExp(`(${escaped.join("|")})`, "gi");
+}
+
+/**
+ * Encontra um trecho do conteúdo (~280 chars) centrado no primeiro match de qualquer termo.
+ * Se nenhum termo aparece, devolve o início do conteúdo.
+ */
+function pickSnippet(
+  content: string,
+  terms: string[],
+  windowSize = 280,
+): { snippet: string; prefix: boolean; suffix: boolean } {
+  if (!content) return { snippet: "", prefix: false, suffix: false };
+  if (content.length <= windowSize) return { snippet: content, prefix: false, suffix: false };
+
+  const normContent = normalizeText(content);
+  let bestIdx = -1;
+  for (const t of terms) {
+    const idx = normContent.indexOf(t);
+    if (idx >= 0 && (bestIdx < 0 || idx < bestIdx)) bestIdx = idx;
+  }
+  if (bestIdx < 0) {
+    return { snippet: content.slice(0, windowSize), prefix: false, suffix: true };
+  }
+  const half = Math.floor(windowSize / 2);
+  const start = Math.max(0, bestIdx - half);
+  const end = Math.min(content.length, start + windowSize);
+  const trimStart = start > 0 ? content.slice(start).search(/\s/) : -1;
+  const realStart = trimStart > 0 && trimStart < 20 ? start + trimStart + 1 : start;
+  return {
+    snippet: content.slice(realStart, end),
+    prefix: realStart > 0,
+    suffix: end < content.length,
+  };
+}
+
+/**
+ * Renderiza texto destacando matches do regex via <mark>. Em fallback usa a versão
+ * normalizada (sem diacríticos) — funciona em PT-BR porque a NFD remove combining
+ * marks sem alterar o comprimento dos caracteres base.
+ */
+function renderHighlighted(
+  text: string,
+  regex: RegExp | null,
+  markCls: string,
+): React.ReactNode {
+  if (!text) return null;
+  if (!regex) return text;
+  const direct: { index: number; length: number }[] = [];
+  for (const m of text.matchAll(regex)) {
+    if (m.index !== undefined) direct.push({ index: m.index, length: m[0].length });
+  }
+  let matches = direct;
+  if (matches.length === 0) {
+    const norm = normalizeText(text);
+    if (norm.length === text.length) {
+      const fb: { index: number; length: number }[] = [];
+      for (const m of norm.matchAll(regex)) {
+        if (m.index !== undefined) fb.push({ index: m.index, length: m[0].length });
+      }
+      matches = fb;
+    }
+  }
+  if (matches.length === 0) return text;
+
+  matches.sort((a, b) => a.index - b.index);
+  const cleaned: typeof matches = [];
+  for (const m of matches) {
+    const last = cleaned[cleaned.length - 1];
+    if (!last || m.index >= last.index + last.length) cleaned.push(m);
+  }
+
+  const out: React.ReactNode[] = [];
+  let cursor = 0;
+  cleaned.forEach((m, i) => {
+    if (m.index > cursor) out.push(text.slice(cursor, m.index));
+    out.push(
+      <mark key={`hl-${i}-${m.index}`} className={markCls}>
+        {text.slice(m.index, m.index + m.length)}
+      </mark>,
+    );
+    cursor = m.index + m.length;
+  });
+  if (cursor < text.length) out.push(text.slice(cursor));
+  return out;
 }
 
 interface Props {
@@ -171,6 +292,16 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   }, [objectionKey]);
 
   const totalIds = ids.length;
+
+  // Termos da objeção (para snippet) + termo da busca (≥2 chars) → regex usada para destacar.
+  const objectionTermsForSnippet = useMemo(
+    () => extractObjectionTerms(objection?.objection),
+    [objection?.objection],
+  );
+  const highlightRegex = useMemo(() => {
+    const searchTerm = normalizedSearch && normalizedSearch.length >= 2 ? [normalizedSearch] : [];
+    return buildHighlightRegex([...objectionTermsForSnippet, ...searchTerm]);
+  }, [objectionTermsForSnippet, normalizedSearch]);
 
   const {
     data,
@@ -611,7 +742,13 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
                 >
                   <header className="flex items-center justify-between gap-2">
                     <h4 className="text-sm font-medium text-foreground truncate">
-                      {ex.title ?? "Sem título"}
+                      {ex.title
+                        ? renderHighlighted(
+                            ex.title,
+                            highlightRegex,
+                            "bg-warning/30 text-foreground rounded px-0.5 py-px",
+                          )
+                        : "Sem título"}
                     </h4>
                     {ex.sentiment && (
                       <Badge variant="outline" className="text-[10px] capitalize">
@@ -651,9 +788,20 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
                     </div>
                   )}
 
-                  {ex.content && (
-                    <p className="text-xs text-muted-foreground line-clamp-3">{ex.content}</p>
-                  )}
+                  {ex.content && (() => {
+                    const snip = pickSnippet(ex.content, objectionTermsForSnippet);
+                    return (
+                      <p className="text-xs text-muted-foreground line-clamp-3 leading-relaxed">
+                        {snip.prefix && <span aria-hidden="true">… </span>}
+                        {renderHighlighted(
+                          snip.snippet,
+                          highlightRegex,
+                          "bg-warning/30 text-foreground rounded px-0.5 py-px",
+                        )}
+                        {snip.suffix && <span aria-hidden="true"> …</span>}
+                      </p>
+                    );
+                  })()}
                   <footer className="flex items-center justify-between pt-1">
                     <span className="text-[10px] text-muted-foreground">
                       {ex.type}
