@@ -38,6 +38,15 @@ import { supabase } from "@/integrations/supabase/client";
 import type { ObjectionAggregate } from "@/hooks/useInteractionsInsights";
 import { cn } from "@/lib/utils";
 import { useObjectionExampleFeedback } from "@/hooks/useObjectionExampleFeedback";
+import { useDebounce } from "@/hooks/useDebounce";
+
+/** Lowercase + remove diacríticos para busca tolerante a acentuação. */
+function normalizeText(s: string | null | undefined): string {
+  return (s ?? "")
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+}
 
 interface Props {
   objection: ObjectionAggregate | null;
