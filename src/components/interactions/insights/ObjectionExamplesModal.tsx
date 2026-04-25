@@ -92,6 +92,16 @@ function bucketOf(rawType: string | null | undefined): TypeBucket {
   return "other";
 }
 
+/** Mapeia rótulos de sentimento para ícone + cor semântica. */
+function sentimentStyle(s: string): { Icon: typeof Smile; cls: string; label: string } {
+  const v = s.toLowerCase();
+  if (v.includes("posit") || v.includes("favor") || v === "good")
+    return { Icon: Smile, cls: "text-success", label: s };
+  if (v.includes("neg") || v.includes("ruim") || v.includes("bad"))
+    return { Icon: Frown, cls: "text-destructive", label: s };
+  return { Icon: Meh, cls: "text-muted-foreground", label: s };
+}
+
 function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   const ids = useMemo(
     () => (objection && Array.isArray(objection.examples) ? objection.examples : []),
