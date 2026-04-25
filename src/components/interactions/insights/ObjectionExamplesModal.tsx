@@ -242,6 +242,7 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     const counts: Record<TypeBucket, number> = {
       whatsapp: 0,
       call: 0,
+      email: 0,
       audio: 0,
       transcript: 0,
       other: 0,
@@ -251,10 +252,28 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
   }, [dateFiltered]);
 
   // Aplica filtro de tipo (multi-seleção) sobre o conjunto já filtrado por data.
-  const filtered = useMemo(() => {
+  const typeFiltered = useMemo(() => {
     if (selectedTypes.size === 0) return dateFiltered;
     return dateFiltered.filter((ex) => selectedTypes.has(bucketOf(ex.type)));
   }, [dateFiltered, selectedTypes]);
+
+  // Contagens de sentimento recalculadas sobre data + tipo aplicados.
+  const sentimentCounts = useMemo(() => {
+    const counts: Record<SentimentBucket, number> = {
+      positive: 0,
+      neutral: 0,
+      negative: 0,
+      unknown: 0,
+    };
+    for (const ex of typeFiltered) counts[sentimentBucketOf(ex.sentiment)] += 1;
+    return counts;
+  }, [typeFiltered]);
+
+  // Aplica filtro de sentimento (multi-seleção) sobre o conjunto já filtrado por data + tipo.
+  const filtered = useMemo(() => {
+    if (selectedSentiments.size === 0) return typeFiltered;
+    return typeFiltered.filter((ex) => selectedSentiments.has(sentimentBucketOf(ex.sentiment)));
+  }, [typeFiltered, selectedSentiments]);
 
   // Itens renderizados = todos os carregados que passaram nos filtros.
   const pageItems = filtered;
