@@ -808,7 +808,7 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
           <div className="grid grid-cols-4 gap-1.5 text-center text-[10px] flex-1 max-w-xl">
             <div className="rounded border border-border/60 p-1">
               <p className="font-semibold text-success">
-                {summary.bestWeek ? `${formatWeek(summary.bestWeek.week)} · ${summary.bestWeek.positivePct}%` : "—"}
+                {summary.bestWeek ? `${formatWeek(normalizeWeek(summary.bestWeek.week))} · ${summary.bestWeek.positivePct}%` : "—"}
               </p>
               <p className="text-muted-foreground">Melhor</p>
             </div>
