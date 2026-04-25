@@ -284,6 +284,24 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
     }
   }, [matchMode]);
 
+  // Sincroniza preset + matchMode com o perfil no Supabase (cross-device).
+  // localStorage permanece como fallback offline / pré-hidratação.
+  const currentPrefs = useMemo<ThemeDrawerPrefs>(
+    () => ({ excerptPreset: preset, matchMode }),
+    [preset, matchMode],
+  );
+  useUiPreferencesSync<ThemeDrawerPrefs>({
+    scope: THEME_DRAWER_PREFS_SCOPE,
+    current: currentPrefs,
+    defaults: THEME_DRAWER_DEFAULTS,
+    sanitize: sanitizeThemeDrawerPrefs,
+    hydrate: (remote) => {
+      setPreset(remote.excerptPreset);
+      setMatchMode(remote.matchMode);
+    },
+    hasUrlOverride: false,
+  });
+
   useEffect(() => {
     if (!theme || !theme.examples.length) {
       setInteractions([]);
