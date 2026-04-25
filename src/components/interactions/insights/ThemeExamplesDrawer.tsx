@@ -309,6 +309,38 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
     [displayItems],
   );
 
+  // Contagem de matches de keywords por excerto exibido (chave = mesma usada no map JSX).
+  const perExcerptCounts = useMemo(() => {
+    const out = new Map<string, number>();
+    if (isFallback || effectiveKeywords.length === 0) return out;
+    displayItems.forEach((ex, i) => {
+      const counts = countTermMatches(ex.text, effectiveKeywords);
+      let total = 0;
+      counts.forEach((n) => (total += n));
+      out.set(`${ex.interactionId}-${ex.position}-${i}`, total);
+    });
+    return out;
+  }, [displayItems, effectiveKeywords, isFallback]);
+
+  // Resumo agregado: quais keywords foram efetivamente encontradas e quantas vezes (somando excertos exibidos).
+  const keywordSummary = useMemo(() => {
+    const totals = new Map<string, number>();
+    for (const kw of effectiveKeywords) totals.set(kw, 0);
+    if (isFallback || effectiveKeywords.length === 0) {
+      return { totals, found: [] as Array<{ term: string; count: number }>, totalMatches: 0 };
+    }
+    for (const ex of displayItems) {
+      const counts = countTermMatches(ex.text, effectiveKeywords);
+      counts.forEach((n, term) => totals.set(term, (totals.get(term) ?? 0) + n));
+    }
+    const found = Array.from(totals.entries())
+      .filter(([, n]) => n > 0)
+      .map(([term, count]) => ({ term, count }))
+      .sort((a, b) => b.count - a.count);
+    const totalMatches = found.reduce((acc, f) => acc + f.count, 0);
+    return { totals, found, totalMatches };
+  }, [displayItems, effectiveKeywords, isFallback]);
+
   return (
     <Sheet open={!!theme} onOpenChange={(o) => !o && onClose()}>
       <SheetContent className="w-full sm:max-w-lg overflow-y-auto">
