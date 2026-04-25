@@ -26,6 +26,21 @@ function isSentimentBucket(v: string | null): v is SentimentOverall {
   return v === "positive" || v === "neutral" || v === "negative" || v === "mixed";
 }
 
+type ObjectionFilter = "all" | "unhandled" | "critical";
+
+function isObjectionFilter(v: string | null): v is ObjectionFilter {
+  return v === "all" || v === "unhandled" || v === "critical";
+}
+
+/**
+ * Severidade alinhada com `ObjectionsSpotlight.getSeverity` para que o filtro
+ * "Críticas" daqui case com a marcação visual dos cards.
+ */
+function isCritical(o: ObjectionAggregate): boolean {
+  const rate = o.count ? (o.handled / o.count) * 100 : 0;
+  return o.unhandled >= 3 || rate <= 30;
+}
+
 export function InsightsPanel() {
   const [searchParams, setSearchParams] = useSearchParams();
   const periodParam = searchParams.get("periodo");
