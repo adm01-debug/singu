@@ -67,12 +67,42 @@ export const UltimasInteracoesCard = memo(({ interactions, contactId, headerExtr
   const channelsKey = Array.isArray(channels) ? [...channels].map((c) => c.toLowerCase()).sort().join(',') : '';
   const qKey = q ? hashString(q.trim().toLowerCase()) : 'noq';
   const filterKey = `${days ?? 'all'}-${channelsKey || 'all'}-${qKey}`;
+
+  // Deep-link: ?focus=<interactionId> rola até o item e aplica destaque temporário.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const focusId = searchParams.get('focus');
+  const focusIndex = focusId ? items.findIndex((it) => it.id === focusId) : -1;
+  const initialBatch = focusIndex >= 0 ? Math.max(15, focusIndex + 5) : 15;
+
   const { visible, hasMore, sentinelRef, loadMore } = useInfiniteList(
     items,
-    15,
+    initialBatch,
     [items, contactId, filterKey],
     { persistKey: contactId ? `ficha-ultimas-${contactId}-${filterKey}` : undefined }
   );
+
+  const [highlightId, setHighlightId] = useState<string | null>(null);
+  const focusedRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!focusId || focusedRef.current === focusId) return;
+    if (!items.some((it) => it.id === focusId)) return;
+    focusedRef.current = focusId;
+    // Aguarda render do item visível antes de rolar.
+    const timer = window.setTimeout(() => {
+      const el = document.querySelector<HTMLElement>(`[data-interaction-id="${focusId}"]`);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlightId(focusId);
+        window.setTimeout(() => setHighlightId(null), 2400);
+      }
+      // Limpa o param da URL para não re-disparar em remounts/voltar.
+      const next = new URLSearchParams(searchParams);
+      next.delete('focus');
+      setSearchParams(next, { replace: true });
+    }, 120);
+    return () => window.clearTimeout(timer);
+  }, [focusId, items, searchParams, setSearchParams]);
 
   // Publica progresso para overlays globais (ex.: tooltip do botão "Voltar ao topo").
   useReportInfiniteScrollProgress(
