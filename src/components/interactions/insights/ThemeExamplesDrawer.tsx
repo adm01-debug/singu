@@ -222,11 +222,28 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
   useEffect(() => {
     if (typeof window === "undefined") return;
     try {
-      window.localStorage.setItem(EXCERPT_PRESET_STORAGE_KEY, preset);
+      // Quando o preset volta ao default, removemos a chave para "limpar" o override
+      // salvo anteriormente — assim o pr\u00f3ximo carregamento usa puramente o default.
+      if (preset === DEFAULT_EXCERPT_PRESET) {
+        window.localStorage.removeItem(EXCERPT_PRESET_STORAGE_KEY);
+      } else {
+        window.localStorage.setItem(EXCERPT_PRESET_STORAGE_KEY, preset);
+      }
     } catch {
       /* ignore quota / private mode errors */
     }
   }, [preset]);
+
+  const resetWindow = () => {
+    setPreset(DEFAULT_EXCERPT_PRESET);
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.removeItem(EXCERPT_PRESET_STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
+    }
+  };
 
   const [matchMode, setMatchMode] = useState<MatchMode>(() => {
     if (typeof window === "undefined") return "exact";
@@ -449,6 +466,19 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
                 {p === "short" ? "Curto" : p === "medium" ? "Médio" : "Longo"}
               </button>
             ))}
+            {preset !== DEFAULT_EXCERPT_PRESET && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-6 px-2 ml-1 text-[11px] gap-1 text-muted-foreground hover:text-foreground"
+                onClick={resetWindow}
+                title="Restaurar o tamanho do trecho para o padrão (Médio) e limpar o valor salvo"
+                aria-label="Resetar janela do trecho para o padrão Médio"
+              >
+                <RotateCcw className="h-3 w-3" /> Resetar janela
+              </Button>
+            )}
           </div>
 
           <div
