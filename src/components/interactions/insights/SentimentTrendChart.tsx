@@ -266,19 +266,35 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
       )}
 
       {anns.length > 0 && (
-        <div className="border-t border-border/60 pt-2 space-y-0.5">
-          <p className="text-[10px] font-semibold text-muted-foreground">Anotações</p>
-          {anns.slice(0, 2).map((a) => {
-            const meta = ANNOTATION_CATEGORIES[a.category];
-            return (
-              <p key={a.id} className="text-[10px] flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-sm shrink-0" style={{ backgroundColor: meta.color }} aria-hidden />
-                <span className="font-medium truncate text-foreground">{a.title}</span>
-              </p>
-            );
-          })}
-          {anns.length > 2 && (
-            <p className="text-[10px] text-muted-foreground">+{anns.length - 2} mais</p>
+        <div className="border-t border-border/60 pt-2 space-y-1">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+            Anotações ({anns.length})
+          </p>
+          <ul className="space-y-1">
+            {anns.slice(0, 3).map((a) => {
+              const meta = ANNOTATION_CATEGORIES[a.category];
+              const Icon = meta.icon;
+              return (
+                <li key={a.id} className="flex items-start gap-1.5 text-[11px]">
+                  <span
+                    className="mt-0.5 inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-sm"
+                    style={{ backgroundColor: meta.color }}
+                    aria-hidden
+                  >
+                    <Icon className="h-2.5 w-2.5" style={{ color: "hsl(var(--background))" }} strokeWidth={2.5} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="font-medium text-foreground line-clamp-2">{a.title}</span>
+                    <span className="block text-[9px] uppercase tracking-wide text-muted-foreground">
+                      {meta.label}
+                    </span>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+          {anns.length > 3 && (
+            <p className="text-[10px] text-muted-foreground italic">+{anns.length - 3} anotação(ões) — veja a lista abaixo</p>
           )}
         </div>
       )}
