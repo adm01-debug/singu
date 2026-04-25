@@ -14,7 +14,7 @@ import {
   ReferenceDot,
 } from "recharts";
 import type { TooltipProps } from "recharts";
-import { TrendingUp, TrendingDown, Minus, Pin, ShieldCheck, Shield, ShieldAlert, HelpCircle, Activity, Filter, EyeOff } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Pin, ShieldCheck, Shield, ShieldAlert, HelpCircle, Activity, Filter, EyeOff, CalendarRange, Info } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
