@@ -266,19 +266,35 @@ function WeeklySentimentTooltip({ active, payload }: TooltipProps<number, string
       )}
 
       {anns.length > 0 && (
-        <div className="border-t border-border/60 pt-2 space-y-0.5">
-          <p className="text-[10px] font-semibold text-muted-foreground">Anotações</p>
-          {anns.slice(0, 2).map((a) => {
-            const meta = ANNOTATION_CATEGORIES[a.category];
-            return (
-              <p key={a.id} className="text-[10px] flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-sm shrink-0" style={{ backgroundColor: meta.color }} aria-hidden />
-                <span className="font-medium truncate text-foreground">{a.title}</span>
-              </p>
-            );
-          })}
-          {anns.length > 2 && (
-            <p className="text-[10px] text-muted-foreground">+{anns.length - 2} mais</p>
+        <div className="border-t border-border/60 pt-2 space-y-1">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">
+            Anotações ({anns.length})
+          </p>
+          <ul className="space-y-1">
+            {anns.slice(0, 3).map((a) => {
+              const meta = ANNOTATION_CATEGORIES[a.category];
+              const Icon = meta.icon;
+              return (
+                <li key={a.id} className="flex items-start gap-1.5 text-[11px]">
+                  <span
+                    className="mt-0.5 inline-flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-sm"
+                    style={{ backgroundColor: meta.color }}
+                    aria-hidden
+                  >
+                    <Icon className="h-2.5 w-2.5" style={{ color: "hsl(var(--background))" }} strokeWidth={2.5} />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="font-medium text-foreground line-clamp-2">{a.title}</span>
+                    <span className="block text-[9px] uppercase tracking-wide text-muted-foreground">
+                      {meta.label}
+                    </span>
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+          {anns.length > 3 && (
+            <p className="text-[10px] text-muted-foreground italic">+{anns.length - 3} anotação(ões) — veja a lista abaixo</p>
           )}
         </div>
       )}
@@ -408,9 +424,18 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
     return dataWithMA
       .filter((p) => (p.annotations?.length ?? 0) > 0)
       .map((p) => {
-        const first = p.annotations![0];
+        const anns = p.annotations!;
+        const first = anns[0];
         const meta = ANNOTATION_CATEGORIES[first.category];
-        return { week: p.week, color: meta.color, count: p.annotations!.length };
+        return {
+          week: p.week,
+          color: meta.color,
+          count: anns.length,
+          category: first.category,
+          icon: meta.icon,
+          label: meta.label,
+          title: first.title,
+        };
       });
   }, [dataWithMA]);
 
@@ -748,19 +773,43 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
                 dot={false}
               />
             )}
-            {annotationDots.map((d) => (
-              <ReferenceDot
-                key={d.week}
-                yAxisId="pct"
-                x={d.week}
-                y={100}
-                r={5}
-                fill={d.color}
-                stroke="hsl(var(--background))"
-                strokeWidth={1.5}
-                ifOverflow="visible"
-              />
-            ))}
+            {annotationDots.map((d) => {
+              const Icon = d.icon;
+              return (
+                <ReferenceDot
+                  key={d.week}
+                  yAxisId="pct"
+                  x={d.week}
+                  y={100}
+                  ifOverflow="visible"
+                  isFront
+                  shape={(props: any) => {
+                    const { cx, cy } = props;
+                    if (cx == null || cy == null) return null;
+                    const r = 9;
+                    return (
+                      <g>
+                        <title>{`${d.label}: ${d.title}${d.count > 1 ? ` (+${d.count - 1})` : ""}`}</title>
+                        <circle cx={cx} cy={cy} r={r} fill={d.color} stroke="hsl(var(--background))" strokeWidth={1.5} />
+                        <foreignObject x={cx - 6} y={cy - 6} width={12} height={12} style={{ pointerEvents: "none" }}>
+                          <div style={{ width: 12, height: 12, display: "flex", alignItems: "center", justifyContent: "center", color: "hsl(var(--background))" }}>
+                            <Icon width={10} height={10} strokeWidth={2.5} />
+                          </div>
+                        </foreignObject>
+                        {d.count > 1 && (
+                          <g>
+                            <circle cx={cx + r - 1} cy={cy - r + 1} r={6} fill="hsl(var(--background))" stroke={d.color} strokeWidth={1} />
+                            <text x={cx + r - 1} y={cy - r + 3} textAnchor="middle" fontSize={8} fontWeight={700} fill={d.color}>
+                              {d.count > 9 ? "9+" : d.count}
+                            </text>
+                          </g>
+                        )}
+                      </g>
+                    );
+                  }}
+                />
+              );
+            })}
           </ComposedChart>
         </ResponsiveContainer>
       </div>
