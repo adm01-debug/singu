@@ -230,17 +230,8 @@ function ObjectionExamplesModalImpl({ objection, onClose }: Props) {
     return dateFiltered.filter((ex) => selectedTypes.has(bucketOf(ex.type)));
   }, [dateFiltered, selectedTypes]);
 
-  // Reset de página quando filtros mudam ou resultado encolhe
-  useEffect(() => {
-    setPage(1);
-  }, [dateFrom, dateTo, selectedTypes]);
-
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const safePage = Math.min(page, totalPages);
-  const pageItems = useMemo(() => {
-    const start = (safePage - 1) * PAGE_SIZE;
-    return filtered.slice(start, start + PAGE_SIZE);
-  }, [filtered, safePage]);
+  // Itens renderizados = todos os carregados que passaram nos filtros.
+  const pageItems = filtered;
 
   /**
    * Sentimento predominante por contato — calculado sobre o conjunto já filtrado
