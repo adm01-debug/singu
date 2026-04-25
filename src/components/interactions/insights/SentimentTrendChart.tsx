@@ -424,10 +424,18 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   }, [annotationsByWeekRaw]);
 
   const annotationsByWeek = useMemo(() => {
+    // Normaliza a chave do mapa para 'YYYY-MM-DD' para casar com o
+    // dataKey "week" do eixo X (que também é normalizado em sortedData).
+    // Sem isso, week_start vindo do banco como '2025-04-07T00:00:00' não
+    // bateria com '2025-04-07' usado no chart.
     const filtered = new Map<string, SentimentAnnotation[]>();
     for (const [week, list] of annotationsByWeekRaw.entries()) {
+      const key = normalizeWeek(week);
       const kept = list.filter((a) => annCategoryFilter.has(a.category));
-      if (kept.length > 0) filtered.set(week, kept);
+      if (kept.length === 0) continue;
+      const acc = filtered.get(key) ?? [];
+      acc.push(...kept);
+      filtered.set(key, acc);
     }
     return filtered;
   }, [annotationsByWeekRaw, annCategoryFilter]);
@@ -528,6 +536,10 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   const weekOptions = useMemo(() => sortedData.map((p) => p.week), [sortedData]);
 
   const annotationDots = useMemo(() => {
+    // Deriva os marcadores estritamente de dataWithMA, cujas chaves "week"
+    // são as mesmas do dataKey do eixo X (já normalizadas via sortedData).
+    // Isso garante que o ReferenceDot caia exatamente sobre a banda da
+    // semana correspondente, sem desalinhamento por strings divergentes.
     return dataWithMA
       .filter((p) => (p.annotations?.length ?? 0) > 0)
       .map((p) => {
@@ -535,7 +547,7 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
         const first = anns[0];
         const meta = ANNOTATION_CATEGORIES[first.category];
         return {
-          week: p.week,
+          week: p.week, // chave canônica do eixo X
           color: meta.color,
           count: anns.length,
           category: first.category,
@@ -545,6 +557,20 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
         };
       });
   }, [dataWithMA]);
+
+  // Anotações cuja semana não existe no sortedData ficam invisíveis no
+  // gráfico (sem banda correspondente). Contamos para sinalizar ao usuário
+  // em vez de "perder" anotações silenciosamente.
+  const orphanAnnotations = useMemo(() => {
+    if (!annotationsApi.list.data) return 0;
+    const validWeeks = new Set(sortedData.map((p) => p.week));
+    let n = 0;
+    for (const a of annotationsApi.list.data) {
+      if (!annCategoryFilter.has(a.category)) continue;
+      if (!validWeeks.has(normalizeWeek(a.week_start))) n++;
+    }
+    return n;
+  }, [annotationsApi.list.data, sortedData, annCategoryFilter]);
 
   const mixedStats = useMemo(() => {
     const totalMixed = sortedData.reduce((acc, p) => acc + (p.mixed ?? 0), 0);
@@ -1060,6 +1086,12 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
             <p className="text-[10px] text-muted-foreground italic flex items-center gap-1 px-1">
               <EyeOff className="h-3 w-3" />
               Filtro ativo: ocultando {totalAnnotations - visibleAnnotations} anotação(ões) de categorias desmarcadas.
+            </p>
+          )}
+          {orphanAnnotations > 0 && (
+            <p className="text-[10px] text-warning/90 italic flex items-center gap-1 px-1">
+              <ShieldAlert className="h-3 w-3" />
+              {orphanAnnotations} anotação(ões) sem semana correspondente no gráfico — visíveis apenas na lista abaixo.
             </p>
           )}
           <AnnotationDialog
