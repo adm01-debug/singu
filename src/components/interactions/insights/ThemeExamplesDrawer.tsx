@@ -226,6 +226,25 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
     }
   }, [preset]);
 
+  const [matchMode, setMatchMode] = useState<MatchMode>(() => {
+    if (typeof window === "undefined") return "exact";
+    try {
+      const v = window.localStorage.getItem(MATCH_MODE_STORAGE_KEY);
+      return isMatchMode(v) ? v : "exact";
+    } catch {
+      return "exact";
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(MATCH_MODE_STORAGE_KEY, matchMode);
+    } catch {
+      /* ignore quota / private mode errors */
+    }
+  }, [matchMode]);
+
   useEffect(() => {
     if (!theme || !theme.examples.length) {
       setInteractions([]);
