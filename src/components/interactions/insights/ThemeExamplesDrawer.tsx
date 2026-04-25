@@ -6,7 +6,10 @@ import { ExternalLink, Info, Loader2, Quote, RotateCcw, Eraser } from "lucide-re
 import { Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useTopicsCatalog } from "@/hooks/useConversationIntel";
-import { extractExcerpts, type Excerpt } from "@/lib/insights/extractExcerpts";
+import { extractExcerpts, type Excerpt, type MatchMode } from "@/lib/insights/extractExcerpts";
+
+const MATCH_MODE_STORAGE_KEY = "themeDrawer.matchMode";
+const isMatchMode = (v: unknown): v is MatchMode => v === "exact" || v === "partial";
 import { pickTopPassages } from "@/lib/insights/pickTopPassages";
 import {
   DEFAULT_EXCERPT_PRESET,
@@ -48,10 +51,15 @@ function normalizeText(s: string): string {
 }
 
 /**
- * Conta ocorrências whole-word de cada termo dentro de `text` (acento-insensível).
- * Retorna um Map<keywordOriginal, count> preservando o termo informado pelo chamador.
+ * Conta ocorrências de cada termo dentro de `text` (sempre case/acento-insensível).
+ * - matchMode "exact": whole-word (delimitado por não-letra/não-dígito).
+ * - matchMode "partial": substring livre.
  */
-function countTermMatches(text: string, terms: string[]): Map<string, number> {
+function countTermMatches(
+  text: string,
+  terms: string[],
+  matchMode: MatchMode = "exact",
+): Map<string, number> {
   const result = new Map<string, number>();
   if (!text) return result;
   const norm = normalizeText(text);
@@ -61,10 +69,12 @@ function countTermMatches(text: string, terms: string[]): Map<string, number> {
       result.set(t, 0);
       continue;
     }
-    const re = new RegExp(
-      `(?:^|[^\\p{L}\\p{N}])(${escapeRegex(normalizeText(trimmed))})(?=$|[^\\p{L}\\p{N}])`,
-      "giu",
-    );
+    const escaped = escapeRegex(normalizeText(trimmed));
+    const pattern =
+      matchMode === "exact"
+        ? `(?:^|[^\\p{L}\\p{N}])(${escaped})(?=$|[^\\p{L}\\p{N}])`
+        : `(${escaped})`;
+    const re = new RegExp(pattern, "giu");
     let count = 0;
     let m: RegExpExecArray | null;
     re.lastIndex = 0;
@@ -82,7 +92,15 @@ interface Segment {
   isMatch: boolean;
 }
 
-const MarkExcerpt = memo(function MarkExcerpt({ text, terms }: { text: string; terms: string[] }) {
+const MarkExcerpt = memo(function MarkExcerpt({
+  text,
+  terms,
+  matchMode = "exact",
+}: {
+  text: string;
+  terms: string[];
+  matchMode?: MatchMode;
+}) {
   const segments = useMemo<Segment[]>(() => {
     if (!text) return [];
     const cleaned = Array.from(
@@ -97,10 +115,11 @@ const MarkExcerpt = memo(function MarkExcerpt({ text, terms }: { text: string; t
     if (cleaned.length === 0) return [{ text, isMatch: false }];
 
     const escaped = cleaned.map((t) => escapeRegex(normalizeText(t)));
-    const re = new RegExp(
-      `(?:^|[^\\p{L}\\p{N}])(${escaped.join("|")})(?=$|[^\\p{L}\\p{N}])`,
-      "giu",
-    );
+    const pattern =
+      matchMode === "exact"
+        ? `(?:^|[^\\p{L}\\p{N}])(${escaped.join("|")})(?=$|[^\\p{L}\\p{N}])`
+        : `(${escaped.join("|")})`;
+    const re = new RegExp(pattern, "giu");
     const norm = normalizeText(text);
     const out: Segment[] = [];
     let cursor = 0;
@@ -112,10 +131,11 @@ const MarkExcerpt = memo(function MarkExcerpt({ text, terms }: { text: string; t
       if (start > cursor) out.push({ text: text.slice(cursor, start), isMatch: false });
       out.push({ text: text.slice(start, end), isMatch: true });
       cursor = end;
+      if (end === m.index) re.lastIndex += 1;
     }
     if (cursor < text.length) out.push({ text: text.slice(cursor), isMatch: false });
     return out;
-  }, [text, terms]);
+  }, [text, terms, matchMode]);
 
   if (segments.length === 0) return <>{text}</>;
   return (
@@ -138,12 +158,14 @@ const ExcerptItem = memo(function ExcerptItem({
   interaction,
   terms,
   matchCount,
+  matchMode,
   onClose,
 }: {
   excerpt: Excerpt;
   interaction: InteractionRow | undefined;
   terms: string[];
   matchCount?: number;
+  matchMode?: MatchMode;
   onClose: () => void;
 }) {
   return (
@@ -151,7 +173,7 @@ const ExcerptItem = memo(function ExcerptItem({
       <div className="flex gap-2">
         <Quote className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-1" />
         <p className="text-sm text-foreground leading-relaxed">
-          <MarkExcerpt text={excerpt.text} terms={terms} />
+          <MarkExcerpt text={excerpt.text} terms={terms} matchMode={matchMode} />
         </p>
         {typeof matchCount === "number" && matchCount > 0 && (
           <Badge
@@ -203,6 +225,25 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       /* ignore quota / private mode errors */
     }
   }, [preset]);
+
+  const [matchMode, setMatchMode] = useState<MatchMode>(() => {
+    if (typeof window === "undefined") return "exact";
+    try {
+      const v = window.localStorage.getItem(MATCH_MODE_STORAGE_KEY);
+      return isMatchMode(v) ? v : "exact";
+    } catch {
+      return "exact";
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    try {
+      window.localStorage.setItem(MATCH_MODE_STORAGE_KEY, matchMode);
+    } catch {
+      /* ignore quota / private mode errors */
+    }
+  }, [matchMode]);
 
   useEffect(() => {
     if (!theme || !theme.examples.length) {
@@ -278,8 +319,9 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       totalCap: 5,
       maxPerSource: 2,
       window: getExcerptWindow(preset),
+      matchMode,
     });
-  }, [interactions, effectiveKeywords, preset]);
+  }, [interactions, effectiveKeywords, preset, matchMode]);
 
   const fallbackPassages = useMemo(() => {
     if (excerpts.length > 0) return [];
@@ -307,7 +349,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       if (isFallback || effectiveKeywords.length === 0) {
         return { ex, originalIndex: i, originalKey, total: 0, distinct: 0 };
       }
-      const counts = countTermMatches(ex.text, effectiveKeywords);
+      const counts = countTermMatches(ex.text, effectiveKeywords, matchMode);
       let total = 0;
       let distinct = 0;
       counts.forEach((n) => {
@@ -326,7 +368,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       if (b.total !== a.total) return b.total - a.total;
       return a.originalIndex - b.originalIndex;
     });
-  }, [rawDisplayItems, effectiveKeywords, isFallback]);
+  }, [rawDisplayItems, effectiveKeywords, isFallback, matchMode]);
 
   const displayItems = useMemo(() => ranked.map((r) => r.ex), [ranked]);
 
@@ -356,7 +398,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       return { totals, found: [] as Array<{ term: string; count: number }>, totalMatches: 0 };
     }
     for (const r of ranked) {
-      const counts = countTermMatches(r.ex.text, effectiveKeywords);
+      const counts = countTermMatches(r.ex.text, effectiveKeywords, matchMode);
       counts.forEach((n, term) => totals.set(term, (totals.get(term) ?? 0) + n));
     }
     const found = Array.from(totals.entries())
@@ -365,7 +407,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
       .sort((a, b) => b.count - a.count);
     const totalMatches = found.reduce((acc, f) => acc + f.count, 0);
     return { totals, found, totalMatches };
-  }, [ranked, effectiveKeywords, isFallback]);
+  }, [ranked, effectiveKeywords, isFallback, matchMode]);
 
   return (
     <Sheet open={!!theme} onOpenChange={(o) => !o && onClose()}>
@@ -403,6 +445,36 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
                 )}
               >
                 {p === "short" ? "Curto" : p === "medium" ? "Médio" : "Longo"}
+              </button>
+            ))}
+          </div>
+
+          <div
+            className="flex items-center gap-1.5 pt-1"
+            role="group"
+            aria-label="Modo de correspondência das keywords"
+            title="Como as keywords são comparadas no destaque (sempre case e acento-insensível)"
+          >
+            <span className="text-[10px] text-muted-foreground mr-1">Match:</span>
+            {(["exact", "partial"] as const).map((mode) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setMatchMode(mode)}
+                aria-pressed={matchMode === mode}
+                title={
+                  mode === "exact"
+                    ? "Apenas palavras inteiras (ex.: “preço” não casa com “preçoso”)"
+                    : "Substring livre (ex.: “preço” casa dentro de “precificação”)"
+                }
+                className={cn(
+                  "h-6 px-2 rounded text-[11px] font-medium border transition-colors",
+                  matchMode === mode
+                    ? "bg-primary/10 border-primary/40 text-foreground"
+                    : "bg-card border-border/60 text-muted-foreground hover:text-foreground hover:border-primary/30",
+                )}
+              >
+                {mode === "exact" ? "Exato" : "Parcial"}
               </button>
             ))}
           </div>
@@ -535,6 +607,7 @@ export function ThemeExamplesDrawer({ theme, onClose }: Props) {
                   interaction={interactionMap.get(r.ex.interactionId)}
                   terms={isFallback ? [] : effectiveKeywords}
                   matchCount={perExcerptCounts.get(r.originalKey)}
+                  matchMode={matchMode}
                   onClose={onClose}
                 />
               ))}

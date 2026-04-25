@@ -5,10 +5,14 @@ export interface Excerpt {
   position: number;
 }
 
+export type MatchMode = "exact" | "partial";
+
 export interface ExtractOptions {
   totalCap: number;
   maxPerSource: number;
   window: number;
+  /** "exact" (default) = whole-word; "partial" = substring. Sempre case/acento-insensitive. */
+  matchMode?: MatchMode;
 }
 
 function normalize(s: string): string {
@@ -48,11 +52,16 @@ export function extractExcerpts(
   if (cleanKeywords.length === 0) return [];
 
   const escaped = cleanKeywords.map((k) => escapeRegex(normalize(k)));
-  const re = new RegExp(`(?:^|[^\\p{L}\\p{N}])(${escaped.join("|")})(?=$|[^\\p{L}\\p{N}])`, "giu");
+  const matchMode: MatchMode = opts.matchMode ?? "exact";
+  const buildPattern = () =>
+    matchMode === "exact"
+      ? `(?:^|[^\\p{L}\\p{N}])(${escaped.join("|")})(?=$|[^\\p{L}\\p{N}])`
+      : `(${escaped.join("|")})`;
+  const re = new RegExp(buildPattern(), "giu");
 
   const half = Math.max(40, Math.floor(opts.window / 2));
   const hitsBySource = new Map<string, RawHit[]>();
-  const densityRe = new RegExp(`(?:^|[^\\p{L}\\p{N}])(${escaped.join("|")})(?=$|[^\\p{L}\\p{N}])`, "giu");
+  const densityRe = new RegExp(buildPattern(), "giu");
 
   for (let sIdx = 0; sIdx < sources.length; sIdx++) {
     const src = sources[sIdx];
