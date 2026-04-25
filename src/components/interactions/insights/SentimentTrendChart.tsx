@@ -51,6 +51,24 @@ function parseWeekLocal(w: string): Date {
   return new Date(`${iso}T00:00:00`);
 }
 
+const ISO_WEEK_RE = /^\d{4}-\d{2}-\d{2}$/;
+
+function isValidWeek(w: unknown): w is string {
+  if (typeof w !== "string" || w.length === 0) return false;
+  const iso = normalizeWeek(w);
+  if (!ISO_WEEK_RE.test(iso)) return false;
+  const ts = parseWeekLocal(iso).getTime();
+  return Number.isFinite(ts);
+}
+
+function weekTimestamp(w: string): number {
+  const ts = parseWeekLocal(w).getTime();
+  // Fallback: semanas inválidas (NaN) vão para o final do sort em vez de
+  // colocar todo o array em estado indeterminado (NaN no comparator viola
+  // a ordem total exigida por Array.prototype.sort).
+  return Number.isFinite(ts) ? ts : Number.POSITIVE_INFINITY;
+}
+
 function formatWeek(w: string): string {
   const d = parseWeekLocal(w);
   if (isNaN(d.getTime())) return w;
@@ -448,17 +466,27 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
   }, [annotationsByWeek]);
   const allCategoriesActive = annCategoryFilter.size === CATEGORY_KEYS.length;
 
-  const sortedData = useMemo(() => {
+  const { sortedData, invalidWeekCount } = useMemo(() => {
     const safe = Array.isArray(data) ? data : [];
-    const normalized = safe
-      .filter((p): p is SentimentTrendPoint => !!p && typeof p.week === "string" && p.week.length > 0)
-      .map((p) => ({ ...p, week: normalizeWeek(p.week) }));
+    let dropped = 0;
+    const normalized: SentimentTrendPoint[] = [];
+    for (const p of safe) {
+      if (!p || typeof p.week !== "string" || p.week.length === 0) {
+        dropped++;
+        continue;
+      }
+      const week = normalizeWeek(p.week);
+      if (!isValidWeek(week)) {
+        // Fallback: descarta semanas inválidas em vez de propagar NaN
+        // pelo sort por timestamp (NaN viola ordenação total e poderia
+        // gerar saídas não-determinísticas no Array.prototype.sort).
+        dropped++;
+        continue;
+      }
+      normalized.push({ ...p, week });
+    }
 
     // Dedup defensivo por semana com MERGE (soma) dos contadores.
-    // Manter apenas a primeira ocorrência descartaria volume real e
-    // distorceria a média móvel ponderada e as estatísticas de evolução.
-    // Recalculamos positivePct a partir do total mesclado para manter
-    // coerência interna.
     const merged = new Map<string, SentimentTrendPoint>();
     for (const p of normalized) {
       const existing = merged.get(p.week);
@@ -483,9 +511,14 @@ function SentimentTrendChartImpl({ data, summary, contactId }: Props) {
       });
     }
     const unique = Array.from(merged.values());
-    // Ordena cronologicamente por timestamp real (não lexicográfico)
-    unique.sort((a, b) => parseWeekLocal(a.week).getTime() - parseWeekLocal(b.week).getTime());
-    return unique;
+
+    // Pré-computa timestamps uma vez para evitar parsing repetido no
+    // comparator e para garantir comparação numérica estável.
+    const tsCache = new Map<string, number>();
+    for (const p of unique) tsCache.set(p.week, weekTimestamp(p.week));
+    unique.sort((a, b) => (tsCache.get(a.week) ?? 0) - (tsCache.get(b.week) ?? 0));
+
+    return { sortedData: unique, invalidWeekCount: dropped };
   }, [data]);
 
   const dataWithMA = useMemo(() => {
