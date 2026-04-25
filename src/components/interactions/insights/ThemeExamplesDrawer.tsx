@@ -103,6 +103,8 @@ const MarkExcerpt = memo(function MarkExcerpt({
 }) {
   const segments = useMemo<Segment[]>(() => {
     if (!text) return [];
+    // Guarda defensiva: sem termos reais, n\u00e3o destacar nada (modo fallback / sem keywords).
+    if (!Array.isArray(terms) || terms.length === 0) return [{ text, isMatch: false }];
     const cleaned = Array.from(
       new Map(
         terms
